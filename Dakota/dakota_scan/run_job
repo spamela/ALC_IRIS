@@ -1,0 +1,23 @@
+#!/bin/bash --login
+
+# --- PBS job options (name, compute nodes, job time)
+#PBS -N JOREK
+
+# --- select_max=167 
+#PBS -l select=1:ncpus=1:mpiprocs=48:mem=110GB 
+
+# --- memory per node mem_max=123GB
+# #PBS -l mem=64
+
+# --- Walltime max 24h
+#PBS -l walltime=02:00:00
+
+# --- Replace [budget code] below with your project code (e.g. t01)
+#PBS -A FUA33_ELM-UK
+
+# --- Queue
+#SBATCH --partition=skl_fua_prod
+# #SBATCH --qos=skl_qos_fuabprod
+
+# Launch the parallel job
+dakota -i dakota_jorek.in -o dakota_jorek.out
