@@ -153,7 +153,7 @@ NVCCOPT    := $(NVCCOPT) -arch sm_20
 #EXTRALIB   := $(EXTRALIB) -L$(METIS_HOME) -lmetis
 
 # Scotch always needed to compile
-SCOTCH_HOME = /home/spamela/libs/scotch_5.1
+SCOTCH_HOME = $(HOME)/libs/scotch_5.1
 SCOTCH_INC  = $(SCOTCH_HOME)/include
 SCOTCH_LIB  = $(SCOTCH_HOME)/lib
 # Uncomment on of this blocks
