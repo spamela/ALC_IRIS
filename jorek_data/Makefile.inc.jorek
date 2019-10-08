@@ -1,6 +1,6 @@
 # Configuration file for jorek
 # model directory
-MODEL = model303
+MODEL = model300
 
 # Fortran compiler 
 FC     = mpif90
