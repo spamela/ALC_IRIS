@@ -1162,7 +1162,7 @@ etype = 9  ! for vtk_quad
 
 call write_vtk('jorek_tmp.vtk',xyz,ien,etype,scalar_names,scalars,vector_names,vectors)
 
-write(*,'(A,2e)')'bootstrap analysis, max of j and jb: ',max_jj, max_jb
+write(*,'(A,2e17.8)')'bootstrap analysis, max of j and jb: ',max_jj, max_jb
 write(*,*) 'done.'
 
 end program jorek2vtk
