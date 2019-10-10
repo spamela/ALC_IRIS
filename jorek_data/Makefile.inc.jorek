@@ -23,7 +23,7 @@ USE_PASTIX_MURGE = 0
 USE_MUMPS = 0
 USE_WSMP   = 0
 USE_FFTW = 0
-USE_HDF5 = 0
+USE_HDF5 = 1
 PASTIX_MEMORY_USAGE = 0
 
 #Scotch library
@@ -40,4 +40,5 @@ INC_PASTIX       = -I$(PASTIX_HOME)
 
 LIBLAPACK = -lblas -llapack
 
-
+HDF5INCLUDE = /usr/include/openmpi-x86_64
+HDF5LIB     = -L/usr/lib64/openmpi/lib/ -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
