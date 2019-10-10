@@ -1,0 +1,38 @@
+
+# Dakota Input File: rosen_multidim.in
+# Usage:
+#   dakota -i jorek_multidim.in -o jorek_multidim.out
+
+environment
+## Activate Dakota's legacy X Windows-based graphics on Unix systems
+## Consider newer capabilities in the Dakota GUI
+  tabular_data
+    tabular_data_file = 'dakota_jorek.dat'
+
+method
+  multidim_parameter_study
+    partitions = 2 2
+
+model
+  single
+
+variables
+  continuous_design = 2
+    descriptors       'x1'      "x2"
+    lower_bounds      0.0       0.0
+    upper_bounds      1.0       1.0
+
+interface,
+        fork
+          analysis_driver = 'simulator_script.perl'
+          parameters_file = 'dakota_params.in'
+          results_file    = 'dakota_params.out'
+          work_directory named='workdir_jorek' directory_tag directory_save file_save
+          copy_files = 'files_for_dakota/*'
+        asynchronous
+          evaluation_concurrency = 8
+
+responses
+  response_functions = 4
+  no_gradients
+  no_hessians
