@@ -15,7 +15,7 @@ ENV LD_LIBRARY_PATH="/usr/lib64/compat-openmpi16/lib/:${LD_LIBRARY_PATH}"
 # --- ie. you need to have a version of jorek (here called just ./jorek/)
 COPY jorek/ /jorek_working_dir/jorek/
 COPY run_dakota/ /jorek_working_dir/run_dakota/
-COPY run_test/ /jorek_working_dir/run_test/
+#COPY run_test/ /jorek_working_dir/run_test/
 ENV HOME="/jorek_working_dir"
 
 # --- Download Scotch and Pastix libraries
