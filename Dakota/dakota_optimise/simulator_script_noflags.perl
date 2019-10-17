@@ -9,8 +9,10 @@ use warnings;
 # ---------------------------------------------------------------------------
 
 # --- Location
-my $workdir  = "/marconi_work/FUA33_ELM-UK/spamela/JT-60SA/try_dakota_scan";
-my $jorekdir = "/marconi_work/FUA33_ELM-UK/spamela/JT-60SA/jorek";
+my $workdir  = `pwd`;
+my $home = `echo \$HOME`;
+chomp($home);
+my $jorekdir = $home."/jorek";
 my $jorekexe = "jorek_model303";
 my $jorek2vtk= "jorek2vtk";
 
