@@ -14,7 +14,8 @@ ENV LD_LIBRARY_PATH="/usr/lib64/compat-openmpi16/lib/:${LD_LIBRARY_PATH}"
 # --- jorek.git is not open-source, so need to copy it directly
 # --- ie. you need to have a version of jorek (here called just ./jorek/)
 COPY jorek/ /jorek_working_dir/jorek/
-COPY dakota_optimise/ /jorek_working_dir/run_dakota/dakota_optimise/
+COPY dakota_optimise/run_dakota_optimise/ /jorek_working_dir/run_dakota_optimise/
+COPY dakota_optimise/ /jorek_working_dir/run_dakota_optimise/dakota_optimise/
 #COPY run_test/ /jorek_working_dir/run_test/
 ENV HOME="/jorek_working_dir"
 
@@ -62,7 +63,7 @@ ENV PYTHONPATH="${PYTHONPATH}:${INSTALL_DIR}/share/dakota/Python"
 ENV LD_LIBRARY_PATH="/usr/lib64/openmpi/lib/:${LD_LIBRARY_PATH}"
 
 # --- Run DAKOTA-JOREK JT-60SA example
-WORKDIR /jorek_working_dir/run_dakota/
+WORKDIR /jorek_working_dir/run_dakota_optimise/
 RUN echo "./dakota_optimise/send_dakota_optimisation.perl" > job.launch
 RUN chmod +x ./job.launch
 ENTRYPOINT ["/bin/bash","-c","./job.launch"]
