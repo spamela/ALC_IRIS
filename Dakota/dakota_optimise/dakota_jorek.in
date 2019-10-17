@@ -27,7 +27,7 @@ variables
 
 interface,
         fork
-          analysis_driver = 'simulator_script.perl'
+          analysis_driver = 'simulator_script_noflags.perl'
           parameters_file = 'dakota_params.in'
           results_file    = 'dakota_params.out'
           work_directory named='workdir_jorek' directory_tag directory_save file_save
