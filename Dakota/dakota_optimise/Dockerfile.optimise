@@ -13,8 +13,8 @@ ENV LD_LIBRARY_PATH="/usr/lib64/compat-openmpi16/lib/:${LD_LIBRARY_PATH}"
 # --- Copy JOREK into workdir and go there.
 # --- jorek.git is not open-source, so need to copy it directly
 # --- ie. you need to have a version of jorek (here called just ./jorek/)
+ENV HOME="/jorek_working_dir"
 COPY jorek/ /jorek_working_dir/jorek/
-COPY run_dakota_optimise/ /jorek_working_dir/run_dakota_optimise/
 COPY dakota_optimise/ /jorek_working_dir/run_dakota_optimise/dakota_optimise/
 #COPY run_test/ /jorek_working_dir/run_test/
 ENV HOME="/jorek_working_dir"
@@ -64,9 +64,10 @@ ENV LD_LIBRARY_PATH="/usr/lib64/openmpi/lib/:${LD_LIBRARY_PATH}"
 
 # --- Run DAKOTA-JOREK JT-60SA example
 WORKDIR /jorek_working_dir/run_dakota_optimise/
-RUN echo "./dakota_optimise/send_dakota_optimisation.perl" > job.launch
-RUN chmod +x ./job.launch
-ENTRYPOINT ["/bin/bash","-c","./job.launch"]
+CMD dakota -i dakota_jorek.in -o dakota_jorek.out
+#RUN echo "dakota -i dakota_jorek.in -o dakota_jorek.out" > job.launch
+#RUN chmod +x ./job.launch
+#ENTRYPOINT ["/bin/bash","-c","./job.launch"]
  
 # --- Run JOREK JT-60SA example
 #WORKDIR /jorek_working_dir/run_test/
@@ -81,5 +82,6 @@ ENTRYPOINT ["/bin/bash","-c","./job.launch"]
 #RUN echo "mpirun -np 1 --allow-run-as-root ./jorek_model303 < ./intear > ./jorek_output.txt 2> tmp.out" > job.launch
 #RUN chmod +x ./job.launch
 #ENTRYPOINT ["/bin/bash","-c","./job.launch"]
+
 
 

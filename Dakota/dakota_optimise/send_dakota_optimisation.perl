@@ -12,10 +12,10 @@ my @dakota_dirs = split("\n",$dakota_tmp);
 foreach my $dir (@dakota_dirs)
 {
   print " >>> Preparing directory $dir...\n";
-  chdir("$workdir");
+
   `cp -r dakota_optimise/* $dir/`;
   `cp $dir/injt60sa.in $dir/files_for_dakota/injt60sa.template`;
-  chdir("$workdir/$dir");
-  system("dakota -i dakota_jorek.in -o dakota_jorek.out &");
+  system("docker run -v $workdir/$dir:/jorek_working_dir/run_dakota_optimise/ -d my_tag2");
 }
+
 
