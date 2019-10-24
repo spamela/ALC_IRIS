@@ -135,7 +135,7 @@ if ($fake_run ne "true")
   my $job_success = "failed";
   my $jorek_output = "";
   my $jorek_postproc = "";
-  $command = "mpirun ".$exec." < injt60sa.in > jorek_output.txt 2> tmp.out";
+  $command = "mpirun -np 1 ".$exec." < injt60sa.in > jorek_output.txt 2> tmp.out";
   eval
   {
     `$command`;
