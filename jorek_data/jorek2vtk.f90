@@ -825,8 +825,8 @@ do i=1,element_list%n_elements
           ! --- Hence, it makes more sense to look at R*j_average to compare with the bootstrap...
           scalars(inode,s_bootstrap+2) = R* scalars(inode,n_var+2+n_fluxes+n_neo+n_pellet) / R_axis
           if ( (psi_norm .gt. 0.85) .and. (psi_norm .lt. 0.98) ) then
-            max_jb = max(max_jb,scalars(inode,s_bootstrap+1))
-            max_jj = max(max_jj,scalars(inode,s_bootstrap+2))
+            max_jb = max(max_jb,abs(scalars(inode,s_bootstrap+1)))
+            max_jj = max(max_jj,abs(scalars(inode,s_bootstrap+2)))
           endif
         else
           Jb = 0.d0
