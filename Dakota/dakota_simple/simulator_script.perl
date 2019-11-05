@@ -17,7 +17,7 @@ my $jorekexe = "jorek_model303";
 my $jorek2vtk= "jorek2vtk";
 
 # --- Target values for optimisation and input parameters for scan
-my $target_current = 4.6; # [MA]
+my $target_current = 2.0; # [MA]
 my @rho_width_scan      = (0.08, 0.02);
 my @rho_position_scan   = (0.96, 0.99);
 my @T_width_scan        = (0.0577426, 0.02);
@@ -115,11 +115,11 @@ if ($scan_or_equi eq 'scan')
   my $FF_coef6 = $dakota_values[1];
   # --- Produce the input file
   `cp injt60sa.template injt60sa.in`;
-  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(1\\) =\' -new \'FF_coef(1) = $FF_coef1 !\'";
+  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(1\\)\' -new \'FF_coef(1) = $FF_coef1 !\'";
   `$command`;
-  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(2\\) =\' -new \'FF_coef(2) = $FF_coef2 !\'";
+  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(2\\)\' -new \'FF_coef(2) = $FF_coef2 !\'";
   `$command`;
-  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(6\\) =\' -new \'FF_coef(6) = $FF_coef6 !\'";
+  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(6\\)\' -new \'FF_coef(6) = $FF_coef6 !\'";
   `$command`;
 }
 
