@@ -12,12 +12,12 @@ use warnings;
 my $fake_run = "false";
 
 # --- Location
-my $jorekdir = "/marconi_work/FUA33_ELM-UK/spamela/JT-60SA/jorek";
+my $jorekdir = "/marconi_scratch/userexternal/spamela0/dakota_tmp/test_example/jorek";
 my $jorekexe = "jorek_model303";
 my $jorek2vtk= "jorek2vtk";
 
 # --- Target values for optimisation and input parameters for scan
-my $target_current = 4.6; # [MA]
+my $target_current = 2.0; # [MA]
 my @rho_width_scan      = (0.08, 0.02);
 my @rho_position_scan   = (0.96, 0.99);
 my @T_width_scan        = (0.0577426, 0.02);
@@ -105,16 +105,21 @@ if ($scan_or_equi eq 'scan')
 }else
 {
   # --- Produce a scan of pedestal width and positions based on these values
+  my $get_FF3 = `cat injt60sa.template | grep 'FF_coef(3)'`;
+  my @split_FF3 = split('=',$get_FF3);
+  my $FF_coef3 = $split_FF3[1];
+  @split_FF3 = split('!',$FF_coef3);
+  $FF_coef3 = $split_FF3[0];
   my $FF_coef1 = $dakota_values[0];
-  my $FF_coef2 = -1.0 - $FF_coef1 - 0.2;
+  my $FF_coef2 = -1.0 - $FF_coef1 - $FF_coef3;
   my $FF_coef6 = $dakota_values[1];
   # --- Produce the input file
   `cp injt60sa.template injt60sa.in`;
-  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(1\\) =\' -new \'FF_coef(1) = $FF_coef1 !\'";
+  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(1\\)\' -new \'FF_coef(1) = $FF_coef1 !\'";
   `$command`;
-  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(2\\) =\' -new \'FF_coef(2) = $FF_coef2 !\'";
+  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(2\\)\' -new \'FF_coef(2) = $FF_coef2 !\'";
   `$command`;
-  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(6\\) =\' -new \'FF_coef(6) = $FF_coef6 !\'";
+  $command = "./my_change_file.perl -file injt60sa.in -string \'FF_coef\\(6\\)\' -new \'FF_coef(6) = $FF_coef6 !\'";
   `$command`;
 }
 
