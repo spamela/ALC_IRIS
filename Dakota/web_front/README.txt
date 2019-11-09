@@ -4,8 +4,8 @@ This Docker container enables to run an Apache2-PHP server that can deploy other
 
 The Dockerfile was built by combining two different cases, namely Apache2-PHP and Docker-in-Docker.
 The original Dockerfiles can be found in
-- Apache2-PHP from: https://github.com/jpetazzo/dind.git
-- Docker-in-Docker (DinD) from: https://github.com/alfg/docker-php-apache.git
+- Docker-in-Docker (DinD) from: https://github.com/jpetazzo/dind.git
+- Apache2-PHP from: https://github.com/alfg/docker-php-apache.git
 
 Install Docker on Ubuntu, and as root, build and run the container as:
 
