@@ -31,12 +31,20 @@ window.onload = function()
   }
 
   // --- Check if we have Code containers running
-  containers = execute_command("docker ps -aqf name=DAKOTA_CODE_CONTAINER --filter status=running");
-  if (containers != "")
+  code_containers = get_code_containers();
+  selector = document.getElementById("container_selector");
+  for (i=0 ; i<code_containers.length ; ++i)
   {
-    containers = containers.split("\n");
-    document.getElementById("debug_div").innerHTML=containers[0]+" --- "+containers[1];
+    name_tmp = code_containers[i].split("___");
+    name = name_tmp[1]+"/"+name_tmp[2]+":"+name_tmp[3];
+    new_container = document.createElement('option');
+    new_container.setAttribute("value",name);
+    new_container.innerHTML = name;
+    selector.appendChild(new_container);
   }
+
+  // --- Reset 0D input form if we reloaded page
+  reset_0D_input();
 }
 
 
@@ -174,9 +182,18 @@ function action_wrapper()
   // --- Launch Code container
   if (action_specification == "launch_code")
   { 
+    Docker_username   = document.getElementById("Docker_username").value;
+    Docker_repository = document.getElementById("Docker_repository").value;
+    Docker_tag        = document.getElementById("Docker_tag").value;
+    container_name = "DAKOTA_CODE_CONTAINER___"+Docker_username+"___"+Docker_repository+"___"+Docker_tag;
+    code_id = get_code_container_id(container_name);
+    if (code_id != "")
+    {
+      execute_command("docker rm -f "+code_id);
+    }
     document.getElementById("waiting_gif").style.visibility="visible";
     document.getElementById("waiting_message").innerHTML="<br/>Please wait while your code image is retrieved and launched.<br/>This may take a moment depending on the image size...<br/>";
-    form = document.getElementById("code_form");
+    form = document.getElementById("new_container_form");
     form.submit();
     return;
   }
@@ -198,7 +215,7 @@ function launch_dakota_container()
   dakota_id = execute_command("docker ps -aqf name=dakota_container --filter status=running");
   if (dakota_id != "")
   {
-    document.getElementById("dakota_comments").innerHTML="Dakota container already running:<br/>id -> "+dakota_id;
+    document.getElementById("dakota_comments").innerHTML="Dakota container already running!";
   }else
   // --- Launch a new container
   {
@@ -216,14 +233,24 @@ function launch_dakota_container()
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
-// --- Launch Code container
+// --- Code container functions
 function launch_code_container()
 {
   // --- First check that there isn't a Dakota container already running
-  code_id = execute_command("docker ps -aqf name=code_container --filter status=running");
+  Docker_username   = document.getElementById("Docker_username").value;
+  Docker_repository = document.getElementById("Docker_repository").value;
+  Docker_tag        = document.getElementById("Docker_tag").value;
+  container_name = "DAKOTA_CODE_CONTAINER___"+Docker_username+"___"+Docker_repository+"___"+Docker_tag;
+  code_id = get_code_container_id(container_name);
   if (code_id != "")
   {
-    document.getElementById("code_comments").innerHTML="Code container already running:<br/>id -> "+code_id;
+    show_waiting_div();
+    document.getElementById("waiting_message").innerHTML="<br/>WARNING: you already have a container running for:"
+                                                        +"<br/>"+Docker_username+"/"+Docker_repository+":"+Docker_tag+"<br/>"
+                                                        +"<br/>This will remove it and download a new image to relaunch it."
+                                                        +"<br/>Any dakota instances running using that container will be lost."
+                                                        +"<br/>Are you sure you want to action this request?<br/>";
+    action_specification = "launch_code";
   }else
   // --- Launch a new container
   {
@@ -232,5 +259,170 @@ function launch_code_container()
     action_specification = "launch_code";
   }
 }
+function get_code_containers()
+{
+  // --- Get containers using our flag name DAKOTA_CODE_CONTAINER
+  containers = execute_command('docker ps -af "name=DAKOTA_CODE_CONTAINER" --filter status=running --format "{{.ID}}:::%%%:::{{.Names}}"');
+  output = [];
+  if (containers != "")
+  { 
+    containers = containers.split("\n");
+    for (i=0; i < containers.length; ++i)
+    { 
+      if (containers[i] != "")
+      { 
+        name_tmp = containers[i];
+        name_tmp = name_tmp.split(":::%%%:::");
+        name = name_tmp[1];
+        output.push(name);
+      }
+    }
+  }
+  return output;
+}
+function get_code_container_id(container_name)
+{
+  // --- Get containers using our flag name DAKOTA_CODE_CONTAINER
+  command = 'docker ps -af "name='+container_name+'" --filter status=running --format "{{.ID}}"';
+  container = execute_command(command);
+  return container;
+}   
+function container_select(selected_option)
+{
+  document.getElementById("new_container_form").style.visibility="hidden";
+  if (selected_option.value == "new_container")
+  {
+    document.getElementById("new_container_form").style.visibility="visible";
+  }else
+  {
+    if (selected_option.value != "select_container")
+    {
+      document.getElementById("container_comments").innerHTML="Selected container:<br/>"+selected_option.value;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+// --------------------------------------------------------------------
+// --------------------------------------------------------------------
+// --------------------------------------------------------------------
+// --- 0D input functions
+function add_0D_input()
+{
+  n_inputs = parseInt(document.getElementById("0D_n_inputs").value) + 1;
+  if (n_inputs == 1)
+  {
+    table = document.getElementById("0D_input_table");
+      new_input = document.createElement("tr");
+        new_name  = document.createElement("th");
+          new_name.innerHTML = "name";
+        new_input.appendChild(new_name);
+        new_value = document.createElement("th");
+          new_value.innerHTML = "value";
+        new_input.appendChild(new_value);
+        new_error = document.createElement("th");
+          new_error.innerHTML = "error";
+        new_input.appendChild(new_error);
+        new_nparts = document.createElement("th");
+          new_nparts.innerHTML = "n_parts";
+        new_input.appendChild(new_nparts);
+    table.appendChild(new_input);
+  }
+  if (n_inputs > 3) 
+  {
+    document.getElementById("0D_comments").innerHTML="Sorry, only 3 0D inputs allowed at the moment";
+    return;
+  }
+  document.getElementById("0D_n_inputs").value = n_inputs;
+  table = document.getElementById("0D_input_table");
+    new_input = document.createElement("tr");
+      new_name  = document.createElement("th");
+        new_name.innerHTML = "0D input #"+n_inputs;
+      new_input.appendChild(new_name);
+      new_value = document.createElement("th");
+        new_value_input = document.createElement("input");
+        new_value_input.setAttribute("type","text");
+        new_value_input.setAttribute("size","8");
+        new_value_input.setAttribute("name","0D_input_"+n_inputs);
+        new_value_input.setAttribute("id","0D_input_"+n_inputs);
+        new_value.appendChild(new_value_input);
+      new_input.appendChild(new_value);
+      new_error = document.createElement("th");
+        new_error_input = document.createElement("input");
+        new_error_input.setAttribute("type","text");
+        new_error_input.setAttribute("size","8");
+        new_error_input.setAttribute("name","0D_error_"+n_inputs);
+        new_error_input.setAttribute("id","0D_error_"+n_inputs);
+        new_error.appendChild(new_error_input);
+      new_input.appendChild(new_error);
+      new_nparts = document.createElement("th");
+        new_nparts_input = document.createElement("input");
+        new_nparts_input.setAttribute("type","text");
+        new_nparts_input.setAttribute("size","8");
+        new_nparts_input.setAttribute("name","0D_nparts_"+n_inputs);
+        new_nparts_input.setAttribute("id","0D_nparts_"+n_inputs);
+        new_nparts.appendChild(new_nparts_input);
+      new_input.appendChild(new_nparts);
+  table.appendChild(new_input);
+}
+function reset_0D_input()
+{
+  n_inputs_tmp = parseInt(document.getElementById("0D_n_inputs").value);
+  if (n_inputs_tmp == 0)
+  {
+    return;
+  }
+  document.getElementById("0D_n_inputs").value = 0;
+  for (i=1 ; i<=n_inputs_tmp ; ++i)
+  {
+    add_0D_input();
+  }
+}
+function remove_0D_input()
+{
+  n_inputs_tmp = parseInt(document.getElementById("0D_n_inputs").value);
+  if (n_inputs_tmp == 0)
+  {
+    return;
+  }else
+  {
+    n_inputs_tmp = n_inputs_tmp - 1;
+    if (n_inputs_tmp == 0)
+    {
+      table = document.getElementById("0D_input_table");
+      child = table.lastElementChild;  
+      while (child)
+      { 
+          table.removeChild(child); 
+          child = table.lastElementChild; 
+      } 
+    }else
+    {
+      table = document.getElementById("0D_input_table");
+      child = table.lastElementChild;
+      table.removeChild(child);
+    }
+  }
+  document.getElementById("0D_n_inputs").value = n_inputs_tmp;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 

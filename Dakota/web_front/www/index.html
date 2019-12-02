@@ -42,7 +42,7 @@
 
       <!-- Welcome -->
       <h1>DAKOTA 4 CCFE</h1>
-      <p>Welcome to CCFE Dakota test</p>
+      <p>Run your code with Dakota inside containers</P>
 
       <!-- Left Logo: get back to main page -->
       <a href="index.html" style="position:absolute; left:10px; top:10px; height: 100px; border: 5px solid white;">
@@ -80,12 +80,17 @@
               <!-- Code-container launcher -->
 	      <div style="display: table-cell; text-align: right;">
                 <p>Choose an image for your code.</p>
-                <form id="code_form" action="php/launch_container.php" method="post">
-                  Docker Username: <input type="text" name="username"><br>
-                  Repository: <input type="text" name="repository"><br>
-                  Tag: <input type="text" name="tag"><br>
-                <input type="submit" value="launch" onclick="launch_code_container();">
+                <select id="container_selector" onchange="container_select(this)">
+                  <option value="select_container">Select Container</option>
+                  <option value="new_container">New container</option>
+                </select>
+                <form id="new_container_form" action="php/launch_container.php" method="post" style="visibility: hidden;">
+                  Docker Username: <input type="text" name="username" id="Docker_username"><br>
+                  Repository: <input type="text" name="repository" id="Docker_repository"><br>
+                  Tag: <input type="text" name="tag" id="Docker_tag"><br>
+                  <input type="button" value="launch" onclick="launch_code_container();"><br/>
                 </form>
+                <p id="container_comments"></p>
 	      </div>
 	    </div>
 	  </div>
@@ -95,6 +100,22 @@
         <div id="Inputs" class="tabcontent">
           <h3>Inputs for parameter scans</h3>
           <p>Please specify which parameters you would like to scan.</p>
+          <div style="width: 100%; display: table;">
+            <div style="display: table-row">
+              <!-- 0D Input variables -->
+              <div style="width: 50%; display: table-cell; text-align: left;">
+                <p>Select 0D input variables</p>
+                <button onclick="add_0D_input();">add input</button>
+                <button onclick="remove_0D_input();">remove input</button>
+                <form id="dakota_form" action="php/launch_dakota.php" method="post">
+                  <input id="0D_n_inputs" type="hidden" value="0"><br/>
+                  <table id="0D_input_table">
+                  </table>
+                </form>
+                <p id="0D_comments"></p>
+              </div>
+            </div>
+          </div>
         </div>
         
         <!-- Results Tab -->
