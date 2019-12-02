@@ -10,6 +10,11 @@
     <!-- CSS Style -->
     <link rel="stylesheet" href="css/style.css" type="text/css" />
 
+    <!-- JavaScript Files -->
+    <script type="text/javascript" src="js/main_functions.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+
+
     <!-- Cookies approval THIS WILL NEED TO BE DONE!!!-->
     <!-- <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" /> -->
 
@@ -21,43 +26,97 @@
   <!-- The web page -->
   <body>
 
-    <!--
-    <div id="logo">
-      <a href="index.html">
-        <img src="Logos/MAST_fast_cam.png" style="width: 100.0%;"/>
-      </a>
+    <!-- Waiting div on top of the rest to confirm actions and make user patient... -->
+    <div id="waiting_div" style="position:absolute; width:40%; z-index:3000; border: 20px solid #600000; background-color: rgba(200, 200, 200, 0.9); text-align: center;">
+      <span>
+        <p><br/><br/><br/></p>
+	<p id="waiting_message" style="font-weight: bold;"></p>
+	<img id="waiting_gif" src="Logos/giphy.gif" alt="waiting-gif" style="visibility: hidden; width: 50px; "><br/>
+	<button onclick="action_wrapper();" id="action_wrapper_button" style="background-color: #404040; color: white; border: 2px solid black;">action</button>
+        <button onclick="hide_waiting_div();" id="button_hide_waiting_div_upload" style="background-color: #404040; color: white; border: 2px solid black;">exit</button>
+      <span>
     </div>
-    -->
 
+    <!-- Main wrapper that contains everything else -->
     <div id="wrapper">
 
+      <!-- Welcome -->
       <h1>DAKOTA 4 CCFE</h1>
+      <p>Welcome to CCFE Dakota test</p>
 
+      <!-- Left Logo: get back to main page -->
       <a href="index.html" style="position:absolute; left:10px; top:10px; height: 100px; border: 5px solid white;">
         <img src="Logos/MAST_fast_cam.png" style="height: 70.0%;"/><br />Home
       </a>
 
+      <!-- Right Logo: go to CCFE web page -->
       <a href="http://www.ccfe.ac.uk/index.aspx" style="position:absolute; right:10px; top:10px; height: 100px; border: 5px solid white;">
         <img src="Logos/ccfe.jpg" style="height: 70.0%;"/><br />CCFE home
       </a>
 
-      <p>Welcome to CCFE Dakota test</p>
-      <div>
+      <!-- Work-desk that contains the Set-up, Inputs, and Results tabs -->
+      <div id="workdesk">
 
-        <form action="php/launch_container.php" method="post">
-          Docker Username: <input type="text" name="username"><br>
-          Repository: <input type="text" name="repository"><br>
-          Tag: <input type="text" name="tag"><br>
-        <input type="submit">
-        </form>
+        <!-- Tab links -->
+        <div class="tab">
+          <button class="tablinks" onclick="openTab(event, 'Set-up')" id="defaultOpen">Set-up</button>
+          <button class="tablinks" onclick="openTab(event, 'Inputs')">Inputs</button>
+          <button class="tablinks" onclick="openTab(event, 'Results')">Results</button>
+        </div>
+        
+        <!-- Set-up Tab -->
+        <div id="Set-up" class="tabcontent">
+          <h3>Set-up of Dakota and code</h3>
+          <div style="width: 100%; display: table;">
+            <div style="display: table-row">
+              <!-- Dakota-container launcher -->
+	      <div style="width: 50%; display: table-cell; text-align: left;">
+	        <p>Launch Dakota container</p>
+                <form id="dakota_form" action="php/launch_dakota.php" method="post">
+                  <input type="button" value="launch" onclick="launch_dakota_container();"><br/>
+                  <p id="dakota_comments"></p>
+                </form>
+	      </div>
+              <!-- Code-container launcher -->
+	      <div style="display: table-cell; text-align: right;">
+                <p>Choose an image for your code.</p>
+                <form id="code_form" action="php/launch_container.php" method="post">
+                  Docker Username: <input type="text" name="username"><br>
+                  Repository: <input type="text" name="repository"><br>
+                  Tag: <input type="text" name="tag"><br>
+                <input type="submit" value="launch" onclick="launch_code_container();">
+                </form>
+	      </div>
+	    </div>
+	  </div>
+        </div>
+        
+        <!-- Inputs Tab -->
+        <div id="Inputs" class="tabcontent">
+          <h3>Inputs for parameter scans</h3>
+          <p>Please specify which parameters you would like to scan.</p>
+        </div>
+        
+        <!-- Results Tab -->
+        <div id="Results" class="tabcontent">
+          <h3>Results</h3>
+          <p>Retrieve results.</p>
+        </div>
 
       </div>
 
     </div>
     
+    <!-- Debug-launcher -->
+    <div>
+      <button onclick='execute_command_from_html("ls","debug_div");'>debug...</button><br/>
+      <p id="debug_div" style="background: white;"></p>
+    </div>
+
+    <!-- Email Contact -->
     <br/> <br/> <br/>
     <div id="contact" style="position:absolute; bottom:10px;">
-      <a href="mailto:stanislas.pamela@ukaea.uk">Contact: Stanislas Pamela</a>
+      Contact: <a href="mailto:stanislas.pamela@ukaea.uk">Stanislas Pamela</a> and <a href="mailto:james.buchanan@ukaea.uk">James Buchanan</a>
     </div>
 
     <!-- Cookies approval WILL NEED TO BE DONE !!! -->

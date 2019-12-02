@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# --- name of input file
+n_args=$#
+if [ $n_args -ne 3 ]
+then
+  echo need exactly 3 argument:
+  echo    \"/location/and/name/of/executable\"
+  echo    \"/location/and/name/of/input-file\"
+  echo    \"/location/and/name/of/output-file\"
+  exit 1
+else
+  executable=$1
+  input_file=$2
+  output_file=$3
+fi
+
+#echo 'running code as: '$executable' < '$input_file
+
+mpirun -np 1 --allow-run-as-root $executable < $input_file > $output_file 2> tmp.out
+#mpirun -np 1 $executable < $input_file > $output_file 2> tmp.out
+
