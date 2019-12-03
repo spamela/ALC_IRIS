@@ -7,6 +7,7 @@ if [ "$#" -ne "3" ]
 then
   echo "usage: "
   echo "./convert_input.sh <input_file.template> <input_values.cvs> <input_file.new>"
+  exit 1
 fi
 
 # --- In our case, we know the csv file only has one line with 3 values, get them...
