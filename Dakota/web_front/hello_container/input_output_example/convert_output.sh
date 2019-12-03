@@ -6,7 +6,7 @@
 if [ "$#" -ne "2" ]
 then
   echo "usage: "
-  echo "./convert_output.sh <output_file.template> <output_values.cvs>"
+  echo "./convert_output.sh output_file.template output_values.csv"
   exit 1
 fi
 
@@ -41,7 +41,7 @@ done
 val2=${my_var[0]}
 
 # --- Then we extract the var2 in the json table
-out_tmp=`cat $1 | grep "var2"`
+out_tmp=`cat $1 | grep "var2" | grep -v "we will change"`
 my_var=()
 IFS='\"'
 read -ra ADDR <<< "$out_tmp"
@@ -52,8 +52,7 @@ done
 val3=${my_var[3]}
 
 # --- Finally, we want to record the values "val1*val2" and "val3"
-#val_new=$(($val1 * $val2))
-val_new=$(echo "$val1 * $val2" | bc)
+val_new=`perl -le "print $val1 * $val2"`
 printf "output_1,output_2\n" > out.tmp
 printf "%15.9e,%15.9e\n" $val_new $val3 >> out.tmp
 mv out.tmp output_values.csv

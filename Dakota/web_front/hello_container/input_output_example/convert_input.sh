@@ -6,7 +6,7 @@
 if [ "$#" -ne "3" ]
 then
   echo "usage: "
-  echo "./convert_input.sh <input_file.template> <input_values.cvs> <input_file.new>"
+  echo "./convert_input.sh input_file.template input_values.csv input_file.new"
   exit 1
 fi
 
@@ -22,11 +22,9 @@ done
 
 # --- Now just use sed to replace the values in our input file
 cp $1 tmp.input
-sed "s/my_first_variable = 1.2345/my_first_variable = ${my_var[0]}/g" tmp.input > tmp.output
+sed "s/<xml>0.9876<\/xml>/<xml>${my_var[0]}<\/xml>/g" tmp.input > tmp.output
 mv tmp.output tmp.input
-sed "s/<xml>0.9876<\/xml>/<xml>${my_var[1]}<\/xml>/g" tmp.input > tmp.output
-mv tmp.output tmp.input
-sed "s/\"var2\": \"2.345\"/\"var2\": \"${my_var[2]}\"/g" tmp.input > tmp.output
+sed "s/\"var2\": \"2.345\"/\"var2\": \"${my_var[1]}\"/g" tmp.input > tmp.output
 mv tmp.output $3
 rm tmp.input
 

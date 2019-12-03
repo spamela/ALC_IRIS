@@ -3,18 +3,9 @@
 
 
 // first input variable to be changed
-my_first_variable = 1.2345
-
-...
-more input
-variables
-go here
-...
-
-// another variable
-<my_second_variable>
+<my_first_variable>
   <xml>0.9876</xml>
-</my_second_variable>
+</my_first_variable>
 
 ...
 more input
@@ -22,7 +13,7 @@ variables
 go here
 ...
 
-// and a third variable (we will change "var2")
+// and a second variable (we will change "var2")
 {
   "a-json-tree": {
     "title": "random-data",
@@ -34,5 +25,12 @@ go here
     }
   }
 }
+
+...
+more input
+variables
+go here
+...
+
 
 
