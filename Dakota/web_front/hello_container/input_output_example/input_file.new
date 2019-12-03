@@ -1,0 +1,38 @@
+// this is just a random input file
+// to demonstrate what is expected for the I/O script
+
+
+// first input variable to be changed
+my_first_variable = 9.500000000E+02
+
+...
+more input
+variables
+go here
+...
+
+// another variable
+<my_second_variable>
+  <xml>7.684683552E+01</xml>
+</my_second_variable>
+
+...
+more input
+variables
+go here
+...
+
+// and a third variable (we will change "var2")
+{
+  "a-json-tree": {
+    "title": "random-data",
+    "hello": "how are you",
+    "data-table": {
+      "var1": "1.234",
+      "var2": "1.175886015E+00",
+      "var3": "3.456",
+    }
+  }
+}
+
+
