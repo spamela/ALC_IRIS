@@ -21,9 +21,8 @@ ENV HOME="/dakota_dir"
 # --- Install Dakota
 WORKDIR /dakota_dir/
 RUN wget --no-check-certificate --no-cache --no-cookies https://dakota.sandia.gov/sites/default/files/distributions/public/dakota-6.10-release-public-rhel7.x86_64.tar.gz
-#RUN tar -xvf dakota-6.10-release-public-rhel7.x86_64.tar.gz
-#RUN mv dakota-6.10.0.Linux.x86_64 dakota
 RUN tar -xvf dakota-6.10-release-public-rhel7.x86_64.tar.gz --transform 's/dakota-6.10.0.Linux.x86_64/dakota/'
+RUN rm dakota-6.10-release-public-rhel7.x86_64.tar.gz
 ENV INSTALL_DIR="/dakota_dir/dakota"
 ENV PATH="${INSTALL_DIR}/bin:${INSTALL_DIR}/share/dakota/test:${INSTALL_DIR}/gui:${PATH}"
 ENV PYTHONPATH="${PYTHONPATH}:${INSTALL_DIR}/share/dakota/Python"
@@ -34,10 +33,7 @@ RUN chmod +x /usr/local/bin/wrapdocker
 VOLUME /var/lib/docker
 
 # --- Run waiting script
-ADD waiting_for_actions.sh /dakota_dir/
 WORKDIR /dakota_dir/
-RUN chmod +x waiting_for_actions.sh
 CMD ["wrapdocker"]
-ENTRYPOINT ["/bin/bash","-c","./waiting_for_actions.sh"]
 
 

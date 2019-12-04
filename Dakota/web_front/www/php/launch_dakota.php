@@ -12,7 +12,7 @@ echo "Running container from Docker image: ".$container_name;
 echo "</div>";
 
 // --- Run Container
-$docker_out = shell_exec('docker container run --privileged --name dakota_container -v /var/run/docker.sock:/var/run/docker.sock -v '.$run_dir.':/dakota_runs/ -d '.$container_name);
+$docker_out = shell_exec('docker container run --privileged --name dakota_container -v /var/run/docker.sock:/var/run/docker.sock -v '.$run_dir.':/dakota_runs/ -id '.$container_name);
 #$docker_out = shell_exec('docker run docker/whalesay cowsay boo');
 
 // --- Go Home! (Said Nigel Fromage)
