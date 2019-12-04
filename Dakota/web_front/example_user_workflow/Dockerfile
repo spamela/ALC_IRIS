@@ -4,14 +4,14 @@ ENV container docker
 MAINTAINER Stan Pamela <stanislas.pamela@ukaea.uk>
 
 # --- Packages and environment
-RUN yum update -y
+RUN yum update -y && yum install -y perl
 ENV HOME="/working_dir"
 
 # --- Run waiting script
-ADD waiting_for_actions.sh /working_dir/
+COPY ./ /data_dir/
 WORKDIR /working_dir/
-RUN chmod +x waiting_for_actions.sh
-ENTRYPOINT ["/bin/bash","-c","./waiting_for_actions.sh"]
+CMD ["/bin/bash","-c","cp ../data_dir/*.sh . ; cp ../data_dir/input_file.template . ; ./everything_together.sh"]
+#CMD ["/bin/bash","-c","./everything_together.sh"]
 
 
 
