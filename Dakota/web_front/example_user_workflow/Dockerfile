@@ -11,7 +11,6 @@ ENV HOME="/working_dir"
 COPY ./ /data_dir/
 WORKDIR /working_dir/
 CMD ["/bin/bash","-c","cp ../data_dir/*.sh . ; cp ../data_dir/input_file.template . ; ./everything_together.sh"]
-#CMD ["/bin/bash","-c","./everything_together.sh"]
 
 
 

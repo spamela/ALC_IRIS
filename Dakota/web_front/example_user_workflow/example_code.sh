@@ -40,8 +40,23 @@ do
 done
 val2=${my_var[3]}
 
+# --- Then get the profile data
+out_tmp=`cat input_profile.csv | grep -v values`;
+out_tmp=(${out_tmp//$'\n'/ })
+my_prof=()
+IFS=' '
+read -ra ADDR <<< "$out_tmp"
+for i in "${ADDR[@]}"
+do
+  my_prof+=($i)
+done
+
 # --- Then we do some cutting-edge calculations using val1 and val2
-val1_new=`perl -le "print $val1 * $val2"`
+val1_new=0
+for i in "${my_prof[@]}"
+do
+  val1_new=`perl -le "print $val1_new + $i"`
+done
 val2_new=`perl -le "print $val1 - $val2"`
 val3_new=`perl -le "print $val1 + $val2"`
 

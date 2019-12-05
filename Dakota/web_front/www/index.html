@@ -5,7 +5,7 @@
   <head>
 
     <!-- Title -->
-    <title>DAKOTA 4 CCFE</title>
+    <title>VVeb.UQ CCFE</title>
 
     <!-- CSS Style -->
     <link rel="stylesheet" href="css/style.css" type="text/css" />
@@ -33,7 +33,8 @@
 	<p id="waiting_message" style="font-weight: bold;"></p>
 	<img id="waiting_gif" src="Logos/giphy.gif" alt="waiting-gif" style="visibility: hidden; width: 50px; "><br/>
 	<button onclick="action_wrapper();" id="action_wrapper_button" style="background-color: #404040; color: white; border: 2px solid black;">action</button>
-        <button onclick="hide_waiting_div();" id="button_hide_waiting_div_upload" style="background-color: #404040; color: white; border: 2px solid black;">exit</button>
+        <button onclick="hide_waiting_div();" id="button_hide_waiting_div_upload" style="background-color: #404040; color: white; border: 2px solid black;">exit</button><br/>
+        <div id="terminal_output" style="background:black; color:white;"></div>
       <span>
     </div>
 
@@ -41,8 +42,8 @@
     <div id="wrapper">
 
       <!-- Welcome -->
-      <h1>DAKOTA 4 CCFE</h1>
-      <p>Run your code with Dakota inside containers</P>
+      <h1>VVeb.UQ CCFE</h1>
+      <p>Run your VVUQ inside containers</P>
 
       <!-- Left Logo: get back to main page -->
       <a href="index.html" style="position:absolute; left:10px; top:10px; height: 100px; border: 5px solid white;">
@@ -61,17 +62,18 @@
         <div class="tab">
           <button class="tablinks" onclick="openTab(event, 'Set-up')" id="defaultOpen">Set-up</button>
           <button class="tablinks" onclick="openTab(event, 'Inputs')">Inputs</button>
+          <button class="tablinks" onclick="openTab(event, 'Run')">Run</button>
           <button class="tablinks" onclick="openTab(event, 'Results')">Results</button>
         </div>
         
         <!-- Set-up Tab -->
         <div id="Set-up" class="tabcontent">
-          <h3>Set-up of Dakota and code</h3>
+          <h3>Set-up VVUQ app and codes</h3>
           <div style="width: 100%; display: table;">
             <div style="display: table-row">
-              <!-- Dakota-container launcher -->
+              <!-- VVUQ-app container launcher -->
 	      <div style="width: 50%; display: table-cell; text-align: left;">
-	        <p>Launch Dakota container</p>
+	        <p>Launch VVUQ app container</p>
                 <form id="dakota_form" action="php/launch_dakota.php" method="post">
                   <input type="button" value="launch" onclick="launch_dakota_container();"><br/>
                   <p id="dakota_comments"></p>
@@ -80,17 +82,15 @@
               <!-- Code-container launcher -->
 	      <div style="display: table-cell; text-align: right;">
                 <p>Choose an image for your code.</p>
-                <select id="container_selector" onchange="container_select(this)">
-                  <option value="select_container">Select Container</option>
-                  <option value="new_container">New container</option>
+                <select id="image_selector" onchange="image_select(this)">
+                  <option value="select_image">Select image</option>
+                  <option value="new_image">New image</option>
                 </select>
-                <form id="new_container_form" action="php/launch_container.php" method="post" style="visibility: hidden;">
-                  Docker Username: <input type="text" name="username" id="Docker_username"><br>
-                  Repository: <input type="text" name="repository" id="Docker_repository"><br>
-                  Tag: <input type="text" name="tag" id="Docker_tag"><br>
-                  <input type="button" value="launch" onclick="launch_code_container();"><br/>
+                <form id="new_image_form" action="php/pull_image.php" method="post" style="visibility: hidden;">
+                  Docker image: <input type="text" name="docker_image" id="docker_image" size="30" value="eg. username/repository:tag"><br>
+                  <input type="button" value="launch" onclick="pull_code_image();"><br/>
                 </form>
-                <p id="container_comments"></p>
+                <p id="image_comments"></p>
 	      </div>
 	    </div>
 	  </div>
@@ -114,10 +114,50 @@
                 </form>
                 <p id="0D_comments"></p>
               </div>
+              <!-- 1D Input arrays -->
+              <div style="width: 50%; display: table-cell; text-align: left;">
+                <p>Upload .csv file(s) with values and errors.</p>
+                <form action="php/upload.php" method="post" enctype="multipart/form-data" id="upload_form">
+                  <div id="choose_files">
+                    choose files :
+                    <input class="uploadForm"
+                           type="file"
+                           name="fileToUpload[]"
+                           id="fileToUpload"
+                           onchange="fileChosen()"
+                           multiple="multiple">
+                  </div>
+                </form>
+                <p id="1D_comments"></p><br/>
+                <span id="upload_div" style="visibility: hidden;">
+                  <button id="upload_button" onclick="send_upload();"> upload </button><br/>
+                  <progress id="progressBar" value="0" max="100" style="width:300px;"></progress>
+                  <p id="progress_status"></p>
+                <span>
+              </div>
             </div>
           </div>
         </div>
         
+        <!-- Run Tab -->
+        <div id="Run" class="tabcontent">
+          <h3>Run Dakota</h3>
+          <p>Run Dakota with your code.</p>
+          <div style="width: 100%; display: table;">
+            <div style="display: table-row">
+              <!-- The run button -->
+              <div style="width: 50%; display: table-cell; text-align: left;">
+                <p>Click to launch the Dakota scan</p>
+                <form id="main_run_form" action="php/create_runs.php" method="post">
+                  <input type="hidden" name="docker_image_run" id="docker_image_run">
+                  <input type="button" value="launch" onclick="launch_main_run();">
+                </form>
+                <p id="run_comments"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Results Tab -->
         <div id="Results" class="tabcontent">
           <h3>Results</h3>
@@ -130,7 +170,8 @@
     
     <!-- Debug-launcher -->
     <div>
-      <button onclick='execute_command_from_html("ls","debug_div");'>debug...</button><br/>
+      <!--<button onclick='execute_command_from_html("ls","debug_div");'>debug...</button><br/>-->
+      <button onclick='debug();'>debug...</button><br/>
       <p id="debug_div" style="background: white;"></p>
     </div>
 
