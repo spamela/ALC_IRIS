@@ -78,9 +78,9 @@ window.onload = function()
     }
   }
 
-  // --- Reset 0D input form if we reloaded page
-  reset_0D_input();
-
+  // --- Empty terminal output
+  execute_command('printf "" > /VVebUQ_runs/terminal_output.txt');
+  execute_command('printf "" > /VVebUQ_runs/terminal_command.txt');
 }
 
 
@@ -199,8 +199,8 @@ function execute_command_from_html(command, output_destination)
 }
 function get_terminal_output()
 {
-  output = execute_command('head -n 1 /dakota_runs/terminal_output.txt ; tail /dakota_runs/terminal_output.txt');
-  output = '<pre>'+output+'</pre>';
+  output = execute_command('cat /VVebUQ_runs/terminal_command.txt ; echo ""; tail /VVebUQ_runs/terminal_output.txt');
+  output = '<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap; word-wrap:break-word;">'+output+'</pre>';
   document.getElementById('terminal_output').innerHTML = output;
 }
 
@@ -227,9 +227,30 @@ function action_wrapper()
   {
     document.getElementById("waiting_gif").style.visibility="visible";
     document.getElementById("waiting_message").innerHTML="<br/>Please wait while the dakota image is retrieved and launched.<br/>This may take a minute or so...<br/>";
-    form = document.getElementById("dakota_form");
-    form.submit();
-    return;
+    //form = document.getElementById("dakota_form");
+    //form.submit();
+    //return;
+    // --- Send form
+    image_name = 'spamela2/dakota_container:latest';
+    container_name = 'dakota_container';
+    var formdata = new FormData();
+    formdata.append("docker_image", image_name);
+    formdata.append("container_name", container_name);
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "php/launch_dakota.php",true);
+    // --- We do this async because we want to catch the terminal output while the request runs...
+    xmlhttp.onreadystatechange = function ()
+    {
+      if(this.readyState == 4 && this.status == 200)
+      {
+        // --- Empty terminal output
+        execute_command('printf "" > /VVebUQ_runs/terminal_output.txt');
+        execute_command('printf "" > /VVebUQ_runs/terminal_command.txt');
+        location.reload();
+        return;
+      }
+    };
+    xmlhttp.send(formdata);
   }
   // --- Launch Code container
   if (action_specification == "pull_code")
@@ -250,15 +271,18 @@ function action_wrapper()
         // --- Add image to registry
         Docker_image = document.getElementById("docker_image").value;
         command = 'docker images --format="{{.Repository}}:{{.Tag}},{{.ID}}" | grep '+Docker_image;
-        full_name= execute_command(command);
-        full_name=full_name.replace('\n','');
+        full_name_and_id= execute_command(command);
+        full_name_and_id=full_name_and_id.replace('\n','');
+        full_name = full_name_and_id.split(',');
+        full_name = full_name[0];
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("GET", "php/image_registry.php?action=add_image&image="+full_name, false);
+        xmlhttp.open("GET", "php/image_registry.php?action=add_image&image="+full_name_and_id, false);
         xmlhttp.send();
         // --- Make sure this image is selected in drop-down after reload
-        setCookie('selected_image',Docker_image,7);
+        setCookie('selected_image',full_name,7);
         // --- Empty terminal output
-        execute_command('echo "" > /dakota_runs/terminal_output.txt');
+        execute_command('printf "" > /VVebUQ_runs/terminal_output.txt');
+        execute_command('printf "" > /VVebUQ_runs/terminal_command.txt');
         location.reload();
         return;
       }
@@ -420,113 +444,6 @@ function image_select_change(optionValToSelect)
 
 
 
-
-
-
-
-
-// --------------------------------------------------------------------
-// --------------------------------------------------------------------
-// --------------------------------------------------------------------
-// --- 0D input functions
-function add_0D_input()
-{
-  n_inputs = parseInt(document.getElementById("0D_n_inputs").value) + 1;
-  if (n_inputs == 1)
-  {
-    table = document.getElementById("0D_input_table");
-      new_input = document.createElement("tr");
-        new_name  = document.createElement("th");
-          new_name.innerHTML = "name";
-        new_input.appendChild(new_name);
-        new_value = document.createElement("th");
-          new_value.innerHTML = "value";
-        new_input.appendChild(new_value);
-        new_error = document.createElement("th");
-          new_error.innerHTML = "error";
-        new_input.appendChild(new_error);
-        new_nparts = document.createElement("th");
-          new_nparts.innerHTML = "n_parts";
-        new_input.appendChild(new_nparts);
-    table.appendChild(new_input);
-  }
-  if (n_inputs > 3) 
-  {
-    document.getElementById("0D_comments").innerHTML="Sorry, only 3 0D inputs allowed at the moment";
-    return;
-  }
-  document.getElementById("0D_n_inputs").value = n_inputs;
-  table = document.getElementById("0D_input_table");
-    new_input = document.createElement("tr");
-      new_name  = document.createElement("th");
-        new_name.innerHTML = "0D input #"+n_inputs;
-      new_input.appendChild(new_name);
-      new_value = document.createElement("th");
-        new_value_input = document.createElement("input");
-        new_value_input.setAttribute("type","text");
-        new_value_input.setAttribute("size","8");
-        new_value_input.setAttribute("name","0D_input_"+n_inputs);
-        new_value_input.setAttribute("id","0D_input_"+n_inputs);
-        new_value.appendChild(new_value_input);
-      new_input.appendChild(new_value);
-      new_error = document.createElement("th");
-        new_error_input = document.createElement("input");
-        new_error_input.setAttribute("type","text");
-        new_error_input.setAttribute("size","8");
-        new_error_input.setAttribute("name","0D_error_"+n_inputs);
-        new_error_input.setAttribute("id","0D_error_"+n_inputs);
-        new_error.appendChild(new_error_input);
-      new_input.appendChild(new_error);
-      new_nparts = document.createElement("th");
-        new_nparts_input = document.createElement("input");
-        new_nparts_input.setAttribute("type","text");
-        new_nparts_input.setAttribute("size","8");
-        new_nparts_input.setAttribute("name","0D_nparts_"+n_inputs);
-        new_nparts_input.setAttribute("id","0D_nparts_"+n_inputs);
-        new_nparts.appendChild(new_nparts_input);
-      new_input.appendChild(new_nparts);
-  table.appendChild(new_input);
-}
-function reset_0D_input()
-{
-  n_inputs_tmp = parseInt(document.getElementById("0D_n_inputs").value);
-  if (n_inputs_tmp == 0)
-  {
-    return;
-  }
-  document.getElementById("0D_n_inputs").value = 0;
-  for (i=1 ; i<=n_inputs_tmp ; ++i)
-  {
-    add_0D_input();
-  }
-}
-function remove_0D_input()
-{
-  n_inputs_tmp = parseInt(document.getElementById("0D_n_inputs").value);
-  if (n_inputs_tmp == 0)
-  {
-    return;
-  }else
-  {
-    n_inputs_tmp = n_inputs_tmp - 1;
-    if (n_inputs_tmp == 0)
-    {
-      table = document.getElementById("0D_input_table");
-      child = table.lastElementChild;  
-      while (child)
-      { 
-          table.removeChild(child); 
-          child = table.lastElementChild; 
-      } 
-    }else
-    {
-      table = document.getElementById("0D_input_table");
-      child = table.lastElementChild;
-      table.removeChild(child);
-    }
-  }
-  document.getElementById("0D_n_inputs").value = n_inputs_tmp;
-}
 
 
 

@@ -16,6 +16,7 @@ RUN apk --update add \
   e2fsprogs \
   docker \
   curl \
+  perl \
   php-apache2 php-cli php-json php-mbstring php-phar php-openssl \
   && chmod +x /usr/local/bin/wrapdocker \
   && rm -rf /var/cache/apk/* \
@@ -33,10 +34,6 @@ EXPOSE 80
 
 # Define additional metadata for our image.
 VOLUME /var/lib/docker
-
-#RUN echo "%docker ALL=NOPASSWD: /usr/bin/docker" >> /etc/sudoers
-#RUN usermod -u 999 apache \
-#    && groupmod -g 999 apache
 
 WORKDIR /var/www/html/
 RUN chmod +x /opt/entrypoint.sh

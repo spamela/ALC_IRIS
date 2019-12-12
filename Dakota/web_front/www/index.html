@@ -34,7 +34,7 @@
 	<img id="waiting_gif" src="Logos/giphy.gif" alt="waiting-gif" style="visibility: hidden; width: 50px; "><br/>
 	<button onclick="action_wrapper();" id="action_wrapper_button" style="background-color: #404040; color: white; border: 2px solid black;">action</button>
         <button onclick="hide_waiting_div();" id="button_hide_waiting_div_upload" style="background-color: #404040; color: white; border: 2px solid black;">exit</button><br/>
-        <div id="terminal_output" style="background:black; color:white;"></div>
+        <div id="terminal_output" style="width:100%; background:black; color:white; text-align:left; overflow-wrap: normal;"></div>
       <span>
     </div>
 
@@ -102,21 +102,9 @@
           <p>Please specify which parameters you would like to scan.</p>
           <div style="width: 100%; display: table;">
             <div style="display: table-row">
-              <!-- 0D Input variables -->
+              <!-- Input file -->
               <div style="width: 50%; display: table-cell; text-align: left;">
-                <p>Select 0D input variables</p>
-                <button onclick="add_0D_input();">add input</button>
-                <button onclick="remove_0D_input();">remove input</button>
-                <form id="dakota_form" action="php/launch_dakota.php" method="post">
-                  <input id="0D_n_inputs" type="hidden" value="0"><br/>
-                  <table id="0D_input_table">
-                  </table>
-                </form>
-                <p id="0D_comments"></p>
-              </div>
-              <!-- 1D Input arrays -->
-              <div style="width: 50%; display: table-cell; text-align: left;">
-                <p>Upload .csv file(s) with values and errors.</p>
+                <p>Upload a netcdf .nc file with values and errors.</p>
                 <form action="php/upload.php" method="post" enctype="multipart/form-data" id="upload_form">
                   <div id="choose_files">
                     choose files :

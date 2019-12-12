@@ -2,18 +2,15 @@
 
 
 // --- Get Form Variables
-$container_name = "spamela2/dakota_container:latest";
+$image_name = $_POST["docker_image"];
+$container_name = $_POST["container_name"];
 $run_dir = shell_exec('cat config.in');
 $run_dir = str_replace("\n", '', $run_dir);
 
-// --- Some printouts while it launches
-echo "<div style=\"background:white;\"><br />";
-echo "Running container from Docker image: ".$container_name;
-echo "</div>";
-
 // --- Run Container
-$docker_out = shell_exec('docker container run --privileged --name dakota_container -v /var/run/docker.sock:/var/run/docker.sock -v '.$run_dir.':/dakota_runs/ -id '.$container_name);
-#$docker_out = shell_exec('docker run docker/whalesay cowsay boo');
+$command = 'docker container run --privileged --name '.$container_name.' -v /var/run/docker.sock:/var/run/docker.sock -v '.$run_dir.':/VVebUQ_runs/ -id '.$image_name;
+shell_exec('printf \''.$command.'\n\' > /VVebUQ_runs/terminal_command.txt');
+shell_exec($command.' &> /VVebUQ_runs/terminal_output.txt');
 
 // --- Go Home! (Said Nigel Fromage)
 header("Location: {$_SERVER['HTTP_REFERER']}");
