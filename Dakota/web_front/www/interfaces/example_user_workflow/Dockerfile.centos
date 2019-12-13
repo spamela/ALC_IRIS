@@ -1,7 +1,7 @@
-FROM python:3
+FROM centos:7
 
 # --- Packages and environment
-RUN pip3 install netCDF4
+RUN yum install -y netcdf4-python.x86_64 python3 python3-pip.noarch && pip3 install netCDF4
 
 # --- The way this is run is important!
 # --- All the data/codes necessary must be in a separate directory
