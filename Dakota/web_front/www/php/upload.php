@@ -50,8 +50,8 @@ for($i=0 ; $i<$n_files ; $i++)
   {
     $date_full = getdate();
     $date_deleted = $date_full[mday]."-".$date_full[month]."-".$date_full[year];
-    $date_deleted = $date_deleted."---".$date_full[hours].":".$date_full[minutes].":".$date_full[seconds];
-    $trash_file = $new_name.'.'.$date_deleted;
+    $date_deleted = $date_deleted."---".$date_full[hours]."-".$date_full[minutes]."-".$date_full[seconds];
+    $trash_file = $new_name.'.saved_'.$date_deleted;
     rename($new_name, $trash_file);
   }
   

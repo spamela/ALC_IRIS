@@ -27,7 +27,7 @@
   <body>
 
     <!-- Waiting div on top of the rest to confirm actions and make user patient... -->
-    <div id="waiting_div" style="position:absolute; width:40%; z-index:3000; border: 20px solid #600000; background-color: rgba(200, 200, 200, 0.9); text-align: center;">
+    <div id="waiting_div" style="position:absolute; width:60%; z-index:3000; border: 20px solid #600000; background-color: rgba(200, 200, 200, 0.9); text-align: center;">
       <span>
         <p><br/><br/><br/></p>
 	<p id="waiting_message" style="font-weight: bold;"></p>
@@ -97,13 +97,18 @@
         
         <!-- Inputs Tab -->
         <div id="Inputs" class="tabcontent">
-          <h3>Inputs for VVUQ run</h3>
           <div style="width: 100%; display: table;">
             <div style="display: table-row">
               <!-- Input file -->
-              <div style="width: 50%; display: table-cell; text-align: left;">
-                <p>Upload a netcdf .nc file with values and errors.</p>
+              <div style="width: 70%; display: table-cell; text-align: left;">
+                <p>Choose an input file.</p>
+                <select id="file_selector" onchange="file_select(this)">
+                  <option value="select_file">Select file</option>
+                  <option value="new_file">New file</option>
+                </select><br/>
+                <p id="file_comments"></p><br/>
                 <form action="php/upload.php" method="post" enctype="multipart/form-data" id="upload_form">
+                  <p>Upload a netcdf .nc file with values and errors.</p>
                   <div id="choose_files">
                     choose files :
                     <input class="uploadForm"
@@ -113,13 +118,19 @@
                            onchange="fileChosen()"
                            multiple="multiple">
                   </div>
+                  <p id="upload_comments"></p><br/>
                 </form>
-                <p id="1D_comments"></p><br/>
                 <span id="upload_div" style="visibility: hidden;">
                   <button id="upload_button" onclick="send_upload();"> upload </button><br/>
                   <progress id="progressBar" value="0" max="100" style="width:300px;"></progress>
                   <p id="progress_status"></p>
                 <span>
+              </div>
+              <!-- Netcdf example -->
+              <div style="display: table-cell; text-align: left;">
+                <p>The input file must contain data with corresponding errors and the number of samples to be run. Here is a simple example of how to generate such an iput file.</p><br/>
+                <a href="interfaces/netcdf_simple_example.py">netcdf_simple_example.py</a><br/>
+                <p>This will be the only thing passed to your container. Any other input you require must come from within the container itself.</p>
               </div>
             </div>
           </div>
@@ -141,7 +152,7 @@
               <div style="width: 80%; display: table-cell; text-align: left;">
                 <p>Run logs</p>
                 <select id="run_selector" onchange="run_select(this)">
-                  <option value="select_run">Select a run</option>
+                  <option value="select_run">Select run</option>
                 </select><br/>
                 <button id="refresh_containers_log" onclick="refresh_containers_log()">refresh</button>
                 <button id="stop_containers" onclick="stop_containers()">stop containers</button>

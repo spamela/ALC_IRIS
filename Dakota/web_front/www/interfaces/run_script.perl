@@ -27,6 +27,8 @@ my $dir = $split_tmp[$#split_tmp];
 `python3 generate_netcdf_based_on_dakota_params.py`;
 # --- Run container for each dir
 $command = 'docker container run --name '.$container_name.'_'.$dir.' -v '.$run_dir.'/'.$dir.':/work_dir/ -d '.$image_name;
+$output = `$command`;
+$command = 'printf "new container: '.$output.'" >> /VVebUQ_runs/terminal_output.txt';
 `$command`;
 # --- Postprocessing
 $output = sprintf("%21s%17.15e f", "", 0.0);

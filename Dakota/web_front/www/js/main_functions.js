@@ -7,8 +7,6 @@
 var div_to_hide = ["waiting_div"];
 // --- Action specification, when showing the waiting div
 var action_specification = "";
-// --- Action specification, when showing the waiting div
-var code_containers = [];
 
 
 
@@ -32,6 +30,10 @@ window.onload = function()
     document.getElementById(last_tab).click();
   }
 
+  // --- Nice sizing of container logs
+  box_height = document.getElementById("wrapper").clientHeight;
+  document.getElementById("run_comments").style.height = 0.6*box_height + "px";
+
   // --- Hide all utility div's
   for (i = 0; i < div_to_hide.length; ++i)
   {
@@ -41,97 +43,29 @@ window.onload = function()
     document.getElementById(div_to_hide[i]).style.overflow="hidden";
   }
 
-  // --- Nice sizing of container logs
-  box_height = document.getElementById("wrapper").clientHeight;
-  document.getElementById("run_comments").style.height = 0.6*box_height + "px";
-
-  // --- Sanity check for the registered images
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open("GET", "php/image_registry.php?action=sanity_check&image=not_needed", false);
-  xmlhttp.send();
-
-  // --- Check if we have Code docker images available
-  code_images = get_code_images();
-  selector = document.getElementById("image_selector");
-  for (i=0 ; i<code_images.length ; ++i)
-  {
-    new_image = document.createElement('option');
-    new_image.setAttribute("value",code_images[i]);
-    new_image.innerHTML = code_images[i];
-    selector.appendChild(new_image);
-  }
-
   // --- Make sure the image drop-down is on the correct option
+  reload_image_selector();
   selected_image = getCookie('selected_image');
-  if (selected_image != '')
-  {
-    // --- That's the simple cases
-    if ( (selected_image == 'new_image') || (selected_image == 'select_image') )
-    {
-      image_select_change(selected_image);
-    // --- Otherwise make sure the cookie image still exists in the registry!s
-    }else
-    {
-      found_image = 'false';
-      for (i=0 ; i<code_images.length ; ++i)
-      {
-        if (code_images[i] == selected_image)
-        {
-          image_select_change(selected_image);
-          found_image ='true';
-          break;
-        }
-      }
-      if (found_image == 'false')
-      {
-        image_select_change('select_image');
-      }
-    }
-  }
-
-  // --- Check if we have Code docker images available
-  previous_runs = get_previous_runs();
-  selector = document.getElementById("run_selector");
-  for (i=0 ; i<previous_runs.length ; ++i)
-  { 
-    new_run = document.createElement('option');
-    new_run.setAttribute("value",previous_runs[i]);
-    new_run.innerHTML = previous_runs[i];
-    selector.appendChild(new_run);
-  }
+  set_image_selector(selected_image);
 
   // --- Make sure the run drop-down is on the correct option
+  reload_run_selector();
   selected_run = getCookie('selected_run');
-  if (selected_run != '')
-  {
-    // --- That's the simple case
-    if (selected_run == 'select_run')
-    {
-      run_select_change(selected_run);
-    // --- Otherwise make sure the cookie still exists in the registry!s
-    }else
-    {
-      found_run = 'false';
-      for (i=0 ; i<previous_runs.length ; ++i)
-      {
-        if (previous_runs[i] == selected_run)
-        {
-          run_select_change(selected_run);
-          found_run ='true';
-          break;
-        }
-      }
-      if (found_run == 'false')
-      {
-        run_select_change('select_run');
-      }
-    }
-  }
+  set_run_selector(selected_run);
+
+  // --- Make sure the file drop-down is on the correct option
+  reload_file_selector();
+  selected_file = getCookie('selected_file');
+  file_select_change(selected_file);
 
   // --- Empty terminal output
-  execute_command('printf "" > /VVebUQ_runs/terminal_output.txt');
-  execute_command('printf "" > /VVebUQ_runs/terminal_command.txt');
+  empty_terminal_output();
+
 }
+
+
+
+
 
 
 
@@ -146,8 +80,8 @@ function show_waiting_div()
   document.getElementById("waiting_div").style.position="absolute";
   document.getElementById("waiting_div").style.visibility="visible";
   document.getElementById("waiting_div").style.zIndex=3000;
-  document.getElementById("waiting_div").style.marginLeft="30%";
-  document.getElementById("waiting_div").style.width="40%";
+  document.getElementById("waiting_div").style.marginLeft="20%";
+  document.getElementById("waiting_div").style.width="60%";
   document.getElementById("waiting_div").style.top="20%";
   document.getElementById("waiting_div").style.height="60%";
   document.getElementById("waiting_gif").style.visibility="hidden";
@@ -256,7 +190,11 @@ function get_terminal_output()
   output = '<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap; word-wrap:break-word;">'+output+'</pre>';
   document.getElementById('terminal_output').innerHTML = output;
 }
-
+function empty_terminal_output()
+{
+  execute_command('printf "" > /VVebUQ_runs/terminal_output.txt');
+  execute_command('printf "" > /VVebUQ_runs/terminal_command.txt');
+}
 
 
 
@@ -293,10 +231,8 @@ function action_wrapper()
     {
       if(this.readyState == 4 && this.status == 200)
       {
-        // --- Empty terminal output
-        execute_command('printf "" > /VVebUQ_runs/terminal_output.txt');
-        execute_command('printf "" > /VVebUQ_runs/terminal_command.txt');
-        location.reload();
+        empty_terminal_output();
+        hide_waiting_div();
         return;
       }
     };
@@ -329,11 +265,10 @@ function action_wrapper()
         xmlhttp.open("GET", "php/image_registry.php?action=add_image&image="+full_name_and_id, false);
         xmlhttp.send();
         // --- Make sure this image is selected in drop-down after reload
-        setCookie('selected_image',full_name,7);
-        // --- Empty terminal output
-        execute_command('printf "" > /VVebUQ_runs/terminal_output.txt');
-        execute_command('printf "" > /VVebUQ_runs/terminal_command.txt');
-        location.reload();
+        reload_image_selector();
+        set_image_selector(full_name);
+        hide_waiting_div();
+        empty_terminal_output();
         return;
       }
     };
@@ -362,36 +297,13 @@ function action_wrapper()
     {
       if(this.readyState == 4 && this.status == 200)
       {
-        // --- Empty terminal output
-        execute_command('printf "" > /VVebUQ_runs/terminal_output.txt');
-        execute_command('printf "" > /VVebUQ_runs/terminal_command.txt');
         // --- Print the containers logs
         selected_run = execute_command('ls /VVebUQ_runs/ -tr | grep workdir | tail -n 1');
         selected_run = selected_run.replace("\n","");
-        if (selected_run != "")
-        {
-          previous_runs = get_previous_runs();
-          found_run = 'false';
-          for (i=0 ; i<previous_runs.length ; ++i)
-          {
-            if (previous_runs[i] == selected_run)
-            {
-              selector = document.getElementById("run_selector");
-              new_run = document.createElement('option');
-              new_run.setAttribute("value",previous_runs[i]);
-              new_run.innerHTML = previous_runs[i];
-              selector.appendChild(new_run);
-              run_select_change(selected_run);
-              found_run ='true';
-              break;
-            }
-          }
-          if (found_run == 'false')
-          {
-            run_select_change('select_run');
-          }
-        }
-        location.reload();
+        reload_run_selector();
+        set_run_selector(selected_run);
+        hide_waiting_div();
+        empty_terminal_output();
         return;
       }
     };
@@ -409,7 +321,8 @@ function action_wrapper()
       run_name = "VVebUQ_CONTAINER_" + run_name[1];
       command = 'for i in `docker ps -aqf name='+run_name+' --format="{{.ID}}"` ; do docker rm -f $i ; done ';
       execute_command(command);
-      location.reload();
+      set_run_selector(select_run);
+      hide_waiting_div();
       return;
     }else
     {
@@ -431,7 +344,9 @@ function action_wrapper()
       execute_command(command);
       command = 'rm -rf /VVebUQ_runs/'+select_run;
       execute_command(command);
-      location.reload();
+      reload_run_selector();
+      set_run_selector("select_run");
+      hide_waiting_div();
       return;
     }else
     {
@@ -581,78 +496,72 @@ function image_select_change(optionValToSelect)
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// --------------------------------------------------------------------
-// --------------------------------------------------------------------
-// --------------------------------------------------------------------
-// --- Upload functions
-function fileChosen()
+function reload_image_selector()
 {
-  // --- Make folder button visible
-  document.getElementById("1D_comments").innerHTML="Please click to begin upload:";
-  document.getElementById("upload_div").style.visibility="visible";
-  document.getElementById("upload_button").style.visibility = "visible";
-  document.getElementById("progressBar").style.visibility="visible";
-}
-function send_upload()
-{
-  document.getElementById("upload_button").style.visibility = "hidden";
-  document.getElementById("1D_comments").innerHTML = "upload in progress...";
+  // --- Sanity check for the registered images
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", "php/image_registry.php?action=sanity_check&image=not_needed", false);
+  xmlhttp.send();
 
-  var n_files = document.getElementById("fileToUpload").files.length;
-  var formdata = new FormData();
-  for (k=0;k<n_files;k++)
+  // --- Clean up selector
+  selector = document.getElementById("image_selector");
+  child = selector.lastElementChild;  
+  while (child)
   {
-    var file = document.getElementById("fileToUpload").files[k];
-    formdata.append("fileToUpload[]", file);
+    selector.removeChild(child); 
+    child = selector.lastElementChild; 
   }
-  var ajax = new XMLHttpRequest();
-  ajax.upload.addEventListener("progress", progressHandler, false);
-  ajax.addEventListener("load", completeHandler, false);
-  ajax.addEventListener("error", errorHandler, false);
-  ajax.addEventListener("abort", abortHandler, false);
-  ajax.open("POST", "php/upload.php");
-  ajax.send(formdata);
-}
-function progressHandler(event)
-{
-  var percent = (event.loaded / event.total) * 100;
-  document.getElementById("progressBar").value = Math.round(percent);
-  document.getElementById("progress_status").innerHTML = "upload in progress: " + Math.round(percent) + "%";
-}
-function completeHandler(event)
-{
-  document.getElementById("progress_status").innerHTML = "";
-  document.getElementById("1D_comments").innerHTML=event.target.responseText;
-  document.getElementById("progressBar").value = 0;
-  document.getElementById("progressBar").style.visibility="hidden";
-}
-function errorHandler(event)
-{
-  document.getElementById("progress_status").innerHTML = "Upload Failed";
-}
-function abortHandler(event)
-{
-  document.getElementById("progress_status").innerHTML = "Upload Aborted";
-}
 
+  // --- Re-add the basic messages
+  new_image = document.createElement('option');
+  new_image.setAttribute("value","select_image");
+  new_image.innerHTML = "Select image";
+  selector.appendChild(new_image);
+  new_image = document.createElement('option');
+  new_image.setAttribute("value","new_image");
+  new_image.innerHTML = "New image";
+  selector.appendChild(new_image);
 
-
-
+  // --- Check if we have Code docker images available and add them to selector
+  code_images = get_code_images();
+  for (i=0 ; i<code_images.length ; ++i)
+  {
+    new_image = document.createElement('option');
+    new_image.setAttribute("value",code_images[i]);
+    new_image.innerHTML = code_images[i];
+    selector.appendChild(new_image);
+  }
+}
+function set_image_selector(selected_image)
+{
+  // --- That's the simple cases
+  if (selected_image == '')
+  {
+    image_select_change('select_image');
+    return;
+  }
+  if ( (selected_image == 'new_image') || (selected_image == 'select_image') )
+  { 
+    image_select_change(selected_image);
+    return;
+  }
+  // --- Otherwise make sure the cookie image still exists in the registry before selecting it
+  code_images = get_code_images();
+  found_image = 'false';
+  for (i=0 ; i<code_images.length ; ++i)
+  { 
+    if (code_images[i] == selected_image)
+    { 
+      image_select_change(selected_image);
+      found_image ='true';
+      break;
+    }
+  }
+  if (found_image == 'false')
+  { 
+    image_select_change('select_image');
+  }
+}
 
 
 
@@ -741,6 +650,203 @@ function purge_run()
                                                       +"Are you sure you want to action this request?<br/>";
   action_specification = "purge_run";
 }
+function reload_run_selector()
+{
+  // --- Clean up selector
+  selector = document.getElementById("run_selector");
+  child = selector.lastElementChild;
+  while (child)
+  { 
+    selector.removeChild(child); 
+    child = selector.lastElementChild;
+  }
+
+  // --- Re-add the basic messages
+  new_run = document.createElement('option');
+  new_run.setAttribute("value","select_run");
+  new_run.innerHTML = "Select run";
+  selector.appendChild(new_run);
+  
+  // --- Add the other runs available
+  previous_runs = get_previous_runs();
+  for (i=0 ; i<previous_runs.length ; ++i)
+  {
+    new_run = document.createElement('option');
+    new_run.setAttribute("value",previous_runs[i]);
+    new_run.innerHTML = previous_runs[i];
+    selector.appendChild(new_run);
+  }
+}
+function set_run_selector(selected_run)
+{
+  // --- That's the simple cases
+  if ( (selected_run == '') || (selected_run == 'select_run') )
+  {
+    run_select_change('select_run');
+    return;
+  }
+  // --- Otherwise make sure run still exists before selecting it
+  previous_runs = get_previous_runs();
+  found_run = 'false';
+  for (i=0 ; i<previous_runs.length ; ++i)
+  {
+    if (previous_runs[i] == selected_run)
+    {
+      run_select_change(selected_run);
+      found_run ='true';
+      break;
+    }
+  }
+  if (found_run == 'false')
+  {
+    run_select_change('select_run');
+  }
+}
+
+
+
+
+
+
+
+
+
+// --------------------------------------------------------------------
+// --------------------------------------------------------------------
+// --------------------------------------------------------------------
+// --- Upload file functions
+function file_select(selected_option)
+{ 
+  document.getElementById("upload_form").style.visibility="hidden";
+  document.getElementById("file_comments").innerHTML="";
+  if (selected_option.value == "new_file")
+  { 
+    document.getElementById("upload_form").style.visibility="visible";
+    setCookie('selected_file','new_file',7);
+  }else
+  { 
+    if (selected_option.value != "select_file")
+    { 
+      document.getElementById("file_comments").innerHTML="Selected file: "+selected_option.value;
+      execute_command('cp '+selected_option.value+' /VVebUQ_runs/vvebuq_input.nc');
+    }
+    setCookie('selected_file',selected_option.value,7);
+  }
+}
+function file_select_change(optionValToSelect)
+{ 
+  selectElement = document.getElementById('file_selector');
+  selectOptions = selectElement.options;
+  for (var opt, j = 0; opt = selectOptions[j]; j++)
+  { 
+    if (opt.value == optionValToSelect)
+    { 
+      selectElement.selectedIndex = j;
+      file_select(selectElement);
+      break;
+    }
+  }
+}
+function reload_file_selector()
+{ 
+  // --- Clean up selector
+  selector = document.getElementById("file_selector");
+  child = selector.lastElementChild;
+  while (child)
+  { 
+    selector.removeChild(child); 
+    child = selector.lastElementChild;
+  }
+  
+  // --- Re-add the basic messages
+  new_file = document.createElement('option');
+  new_file.setAttribute("value","select_file");
+  new_file.innerHTML = "Select file";
+  selector.appendChild(new_file);
+  new_file = document.createElement('option');
+  new_file.setAttribute("value","new_file");
+  new_file.innerHTML = "New file";
+  selector.appendChild(new_file);
+
+  // --- Add the other runs available
+  existing_files = get_existing_files();
+  for (i=0 ; i<existing_files.length ; ++i)
+  {
+    new_file = document.createElement('option');
+    new_file.setAttribute("value",existing_files[i]);
+    new_file.innerHTML = existing_files[i];
+    selector.appendChild(new_file);
+  }
+}
+function get_existing_files()
+{ 
+  existing_files = [];
+  output = execute_command('ls -p /VVebUQ_runs/ | grep -v "/" | grep -v "terminal_command.txt" | grep -v "terminal_output.txt" | grep -v "vvebuq_input.nc"');
+  output = output.split("\n");
+  for (i=0 ; i<output.length; i++)
+  { 
+    if (output[i] != "")
+    { 
+      existing_files.push(output[i]);
+    }
+  }
+  return existing_files;
+}
+function fileChosen()
+{
+  // --- Make folder button visible
+  document.getElementById("upload_comments").innerHTML="Please click to begin upload:";
+  document.getElementById("upload_div").style.visibility="visible";
+  document.getElementById("upload_button").style.visibility = "visible";
+  document.getElementById("progressBar").style.visibility="visible";
+}
+function send_upload()
+{
+  document.getElementById("upload_button").style.visibility = "hidden";
+  document.getElementById("upload_comments").innerHTML = "upload in progress...";
+
+  var n_files = document.getElementById("fileToUpload").files.length;
+  var formdata = new FormData();
+  for (k=0;k<n_files;k++)
+  {
+    var file = document.getElementById("fileToUpload").files[k];
+    formdata.append("fileToUpload[]", file);
+  }
+  var ajax = new XMLHttpRequest();
+  ajax.upload.addEventListener("progress", progressHandler, false);
+  ajax.addEventListener("load", completeHandler, false);
+  ajax.addEventListener("error", errorHandler, false);
+  ajax.addEventListener("abort", abortHandler, false);
+  ajax.open("POST", "php/upload.php");
+  ajax.send(formdata);
+}
+function progressHandler(event)
+{
+  var percent = (event.loaded / event.total) * 100;
+  document.getElementById("progressBar").value = Math.round(percent);
+  document.getElementById("progress_status").innerHTML = "upload in progress: " + Math.round(percent) + "%";
+}
+function completeHandler(event)
+{
+  document.getElementById("progress_status").innerHTML = "";
+  document.getElementById("upload_comments").innerHTML=event.target.responseText;
+  document.getElementById("progressBar").value = 0;
+  document.getElementById("progressBar").style.visibility="hidden";
+  reload_file_selector();
+  last_file = execute_command('ls -ptr /VVebUQ_runs/ | grep -v "/" | grep -v "terminal_command.txt" | grep -v "terminal_output.txt" | grep -v "vvebuq_input.nc" | tail -n 1');
+  last_file = last_file.replace("\n","");
+  file_select_change(last_file);
+}
+function errorHandler(event)
+{
+  document.getElementById("progress_status").innerHTML = "Upload Failed";
+}
+function abortHandler(event)
+{
+  document.getElementById("progress_status").innerHTML = "Upload Aborted";
+}
+
+
 
 
 

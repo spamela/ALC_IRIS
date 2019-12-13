@@ -14,7 +14,7 @@ $dakota_file = $dakota_file."  tabular_data\n";
 $dakota_file = $dakota_file."    tabular_data_file = \"dakota_run.dat\"\n";
 $dakota_file = $dakota_file."method\n";
 $dakota_file = $dakota_file."  multidim_parameter_study\n";
-$dakota_file = $dakota_file."    partitions = 2 2\n";
+$dakota_file = $dakota_file."    partitions = 4 4\n";
 $dakota_file = $dakota_file."model\n";
 $dakota_file = $dakota_file."  single\n";
 $dakota_file = $dakota_file."variables\n";
