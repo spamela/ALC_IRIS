@@ -20,6 +20,7 @@ $run_dir = str_replace("\n", '', $run_dir);
 // --- Produce files in run directory of container
 $work_dir   = '/VVebUQ_runs';
 $base_dir   = $work_dir.'/'.$workdir_name;
+$mount_dir  = $run_dir.$workdir_name;
 $files_dir  = $base_dir.'/files_for_dakota';
 $input_file = $work_dir.'/vvebuq_input.nc';
 $args_file  = $files_dir.'/arguments_for_dakota_script.txt';
@@ -30,7 +31,7 @@ shell_exec('cp '.$input_file.' '.$files_dir.'/');
 shell_exec('cp ../interfaces/generate_netcdf_based_on_dakota_params.py '.$files_dir.'/');
 shell_exec('cp ../interfaces/run_script.perl '.$base_dir.'/');
 shell_exec('chmod +x '.$base_dir.'/run_script.perl');
-shell_exec('printf \''.$container_name.' '.$base_dir.' '.$image_name.'\' > '.$args_file);
+shell_exec('printf \''.$container_name.' '.$mount_dir.' '.$image_name.'\' > '.$args_file);
 
 // --- Run Container
 $command = 'docker exec -w '.$base_dir.' -t dakota_container dakota -i ./dakota_run.in -o dakota_run.out';

@@ -155,7 +155,7 @@
                   <input type="button" value="launch" onclick="launch_main_run();">
                 </form>
               </div>
-              <!-- The running cases -->
+              <!-- The run cases -->
               <div style="width: 80%; display: table-cell; text-align: left;">
                 <p>Run logs</p>
                 <select id="run_selector" onchange="run_select(this)">
@@ -172,8 +172,20 @@
 
         <!-- Results Tab -->
         <div id="Results" class="tabcontent">
-          <h3>Results</h3>
-          <p>Retrieve results.</p>
+          <div style="width: 100%; display: table;">
+            <div style="display: table-row">
+              <!-- The run cases -->
+              <div style="width: 50%; display: table-cell; text-align: left;">
+                <p>Result files</p>
+                <select id="result_selector" onchange="result_select(this)">
+                  <option value="select_result">Select run</option>
+                </select><br/>
+                <button id="refresh_result_list" onclick="refresh_result_list()">refresh</button>
+                <button id="purge_result" onclick="purge_result()">remove result</button>
+                <p id="result_comments" style="font-weight:normal; font-size:70%; overflow-x:scroll; overflow-y:scroll;"></p>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
