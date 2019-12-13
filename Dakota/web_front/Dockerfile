@@ -13,6 +13,7 @@ RUN apk --update add \
   e2fsprogs \
   docker \
   curl \
+  zip \
   perl \
   php-apache2 php-cli php-json php-mbstring php-phar php-openssl \
   && chmod +x /usr/local/bin/wrapdocker \

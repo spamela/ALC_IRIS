@@ -562,6 +562,14 @@ function set_image_selector(selected_image)
     image_select_change('select_image');
   }
 }
+function download_docker_example()
+{
+  execute_command('cd ../interfaces ; zip -r example_user_workflow.zip ./example_user_workflow ; cd -');
+  link = document.createElement("a");
+  link.download = "download_docker_example";
+  link.href = "./interfaces/example_user_workflow.zip";
+  link.click();
+}
 
 
 
