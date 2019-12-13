@@ -302,6 +302,8 @@ function action_wrapper()
         selected_run = selected_run.replace("\n","");
         reload_run_selector();
         set_run_selector(selected_run);
+        reload_result_selector();
+        set_result_selector("select_result");
         hide_waiting_div();
         empty_terminal_output();
         return;
@@ -941,9 +943,18 @@ function result_select(selected_option)
     setCookie('selected_result',selected_option.value,7);
     // --- print the docker containers corresponding to job
     run_name = selected_option.value;
-    command = 'ls -p /VVebUQ_runs/'+run_name+'/';
+    command = 'ls -p /VVebUQ_runs/'+run_name+' | grep workdir_VVebUQ';
+    count_runs = execute_command(command);
+    count_runs = count_runs.split("\n");
+    count_runs = count_runs.length - 1; // -1 because the last one is just "" after the last "\n"
+    command = 'ls -p /VVebUQ_runs/'+run_name+'/workdir_VVebUQ.1/';
+    command = command + ' | grep -v "arguments_for_dakota_script.txt"';
+    command = command + ' | grep -v "dakota_params.in"';
+    command = command + ' | grep -v "dakota_params.out"';
+    command = command + ' | grep -v "generate_netcdf_based_on_dakota_params.py"';
     containers = execute_command(command);
     containers = "<pre>" + containers + "</pre>";
+    containers = "<p>This case contains "+count_runs+" run-directories each with content:</p>" + containers;
     document.getElementById("result_comments").innerHTML = containers;
   }else
   {
