@@ -43,7 +43,6 @@
 
       <!-- Welcome -->
       <h1>VVeb.UQ CCFE</h1>
-      <p>Run your VVUQ inside containers</P>
 
       <!-- Left Logo: get back to main page -->
       <a href="index.html" style="position:absolute; left:10px; top:10px; height: 100px; border: 5px solid white;">
@@ -60,10 +59,10 @@
 
         <!-- Tab links -->
         <div class="tab">
-          <button class="tablinks" onclick="openTab(event, 'Set-up')" id="defaultOpen">Set-up</button>
-          <button class="tablinks" onclick="openTab(event, 'Inputs')">Inputs</button>
-          <button class="tablinks" onclick="openTab(event, 'Run')">Run</button>
-          <button class="tablinks" onclick="openTab(event, 'Results')">Results</button>
+          <button class="tablinks" onclick="openTab(event, 'Set-up')"  id="TAB_Set-up">Set-up</button>
+          <button class="tablinks" onclick="openTab(event, 'Inputs')"  id="TAB_Inputs">Inputs</button>
+          <button class="tablinks" onclick="openTab(event, 'Run')"     id="TAB_Run">Run</button>
+          <button class="tablinks" onclick="openTab(event, 'Results')" id="TAB_Results">Results</button>
         </div>
         
         <!-- Set-up Tab -->
@@ -98,8 +97,7 @@
         
         <!-- Inputs Tab -->
         <div id="Inputs" class="tabcontent">
-          <h3>Inputs for parameter scans</h3>
-          <p>Please specify which parameters you would like to scan.</p>
+          <h3>Inputs for VVUQ run</h3>
           <div style="width: 100%; display: table;">
             <div style="display: table-row">
               <!-- Input file -->
@@ -129,18 +127,26 @@
         
         <!-- Run Tab -->
         <div id="Run" class="tabcontent">
-          <h3>Run Dakota</h3>
-          <p>Run Dakota with your code.</p>
           <div style="width: 100%; display: table;">
             <div style="display: table-row">
               <!-- The run button -->
-              <div style="width: 50%; display: table-cell; text-align: left;">
-                <p>Click to launch the Dakota scan</p>
+              <div style="width: 20%; display: table-cell; text-align: left;">
+                <p>Launch run</p>
                 <form id="main_run_form" action="php/create_runs.php" method="post">
-                  <input type="hidden" name="docker_image_run" id="docker_image_run">
+                  <input type="hidden" name="docker_image_run" id="docker_image_run" value="">
                   <input type="button" value="launch" onclick="launch_main_run();">
                 </form>
-                <p id="run_comments"></p>
+              </div>
+              <!-- The running cases -->
+              <div style="width: 80%; display: table-cell; text-align: left;">
+                <p>Run logs</p>
+                <select id="run_selector" onchange="run_select(this)">
+                  <option value="select_run">Select a run</option>
+                </select><br/>
+                <button id="refresh_containers_log" onclick="refresh_containers_log()">refresh</button>
+                <button id="stop_containers" onclick="stop_containers()">stop containers</button>
+                <button id="purge_run" onclick="purge_run()">purge run</button>
+                <p id="run_comments" style="font-weight:normal; font-size:70%; overflow-x:scroll; overflow-y:scroll;"></p>
               </div>
             </div>
           </div>
@@ -157,11 +163,14 @@
     </div>
     
     <!-- Debug-launcher -->
+    <!--
     <div>
-      <!--<button onclick='execute_command_from_html("ls","debug_div");'>debug...</button><br/>-->
+      <button onclick='execute_command_from_html("ls","debug_div");'>debug...</button><br/>
       <button onclick='debug();'>debug...</button><br/>
       <p id="debug_div" style="background: white;"></p>
     </div>
+    -->
+    <p id="debug_div" style="background: white;"></p>
 
     <!-- Email Contact -->
     <br/> <br/> <br/>

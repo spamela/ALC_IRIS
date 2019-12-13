@@ -23,7 +23,14 @@ window.onload = function()
   setInterval(function(){get_terminal_output();}, 1000);
 
   // --- This is the main tab we open when launching the app
-  document.getElementById("defaultOpen").click();
+  last_tab = getCookie('last_selected_tab');
+  if (last_tab == "")
+  {
+    document.getElementById("TAB_Set-up").click();
+  }else
+  {
+    document.getElementById(last_tab).click();
+  }
 
   // --- Hide all utility div's
   for (i = 0; i < div_to_hide.length; ++i)
@@ -33,6 +40,10 @@ window.onload = function()
     document.getElementById(div_to_hide[i]).style.height=0;
     document.getElementById(div_to_hide[i]).style.overflow="hidden";
   }
+
+  // --- Nice sizing of container logs
+  box_height = document.getElementById("wrapper").clientHeight;
+  document.getElementById("run_comments").style.height = 0.6*box_height + "px";
 
   // --- Sanity check for the registered images
   var xmlhttp = new XMLHttpRequest();
@@ -50,7 +61,7 @@ window.onload = function()
     selector.appendChild(new_image);
   }
 
-  // --- Make sure the drop-down is on the correct
+  // --- Make sure the image drop-down is on the correct option
   selected_image = getCookie('selected_image');
   if (selected_image != '')
   {
@@ -58,7 +69,7 @@ window.onload = function()
     if ( (selected_image == 'new_image') || (selected_image == 'select_image') )
     {
       image_select_change(selected_image);
-    // --- Otherwise make sure the cokkie image still exists in the registry!s
+    // --- Otherwise make sure the cookie image still exists in the registry!s
     }else
     {
       found_image = 'false';
@@ -74,6 +85,45 @@ window.onload = function()
       if (found_image == 'false')
       {
         image_select_change('select_image');
+      }
+    }
+  }
+
+  // --- Check if we have Code docker images available
+  previous_runs = get_previous_runs();
+  selector = document.getElementById("run_selector");
+  for (i=0 ; i<previous_runs.length ; ++i)
+  { 
+    new_run = document.createElement('option');
+    new_run.setAttribute("value",previous_runs[i]);
+    new_run.innerHTML = previous_runs[i];
+    selector.appendChild(new_run);
+  }
+
+  // --- Make sure the run drop-down is on the correct option
+  selected_run = getCookie('selected_run');
+  if (selected_run != '')
+  {
+    // --- That's the simple case
+    if (selected_run == 'select_run')
+    {
+      run_select_change(selected_run);
+    // --- Otherwise make sure the cookie still exists in the registry!s
+    }else
+    {
+      found_run = 'false';
+      for (i=0 ; i<previous_runs.length ; ++i)
+      {
+        if (previous_runs[i] == selected_run)
+        {
+          run_select_change(selected_run);
+          found_run ='true';
+          break;
+        }
+      }
+      if (found_run == 'false')
+      {
+        run_select_change('select_run');
       }
     }
   }
@@ -117,7 +167,7 @@ function hide_waiting_div()
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 // --- Open/Close Tabs for actions
-function openTab(evt, cityName)
+function openTab(evt, selected_tab)
 {
   // Declare all variables
   var i, tabcontent, tablinks;
@@ -135,8 +185,11 @@ function openTab(evt, cityName)
   }
 
   // Show the current tab, and add an "active" class to the button that opened the tab
-  document.getElementById(cityName).style.display = "block";
+  document.getElementById(selected_tab).style.display = "block";
   evt.currentTarget.className += " active";
+
+  // --- Set Cookie for next reload
+  setCookie('last_selected_tab','TAB_'+selected_tab,7);
 }
 
 
@@ -227,9 +280,6 @@ function action_wrapper()
   {
     document.getElementById("waiting_gif").style.visibility="visible";
     document.getElementById("waiting_message").innerHTML="<br/>Please wait while the dakota image is retrieved and launched.<br/>This may take a minute or so...<br/>";
-    //form = document.getElementById("dakota_form");
-    //form.submit();
-    //return;
     // --- Send form
     image_name = 'spamela2/dakota_container:latest';
     container_name = 'dakota_container';
@@ -291,12 +341,103 @@ function action_wrapper()
   }
   // --- Launch Code container
   if (action_specification == "main_run")
-  { 
+  {
+    selectElement = document.getElementById('image_selector');
+    selected_image = selectElement.value;
+    if ( (selected_image == "") || (selected_image == "select_image") || (selected_image == "new_image") )
+    {
+      document.getElementById("waiting_message").innerHTML="<br/>Please select an image before running (first tab)!<br/>";
+      document.getElementById("action_wrapper_button").style.visibility="hidden";
+      return;
+    }
     document.getElementById("waiting_gif").style.visibility="visible";
     document.getElementById("waiting_message").innerHTML="<br/>Please wait while dakota launches containers for your jobs.<br/>This may take a moment depending on the number of runs...<br/>";
-    form = document.getElementById("main_run_form");
-    form.submit();
-    return;  
+    // --- Send form
+    var formdata = new FormData();
+    formdata.append("docker_image_run", selected_image);
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "php/create_runs.php",true);
+    // --- We do this async because we want to catch the terminal output while the request runs...
+    xmlhttp.onreadystatechange = function ()
+    {
+      if(this.readyState == 4 && this.status == 200)
+      {
+        // --- Empty terminal output
+        execute_command('printf "" > /VVebUQ_runs/terminal_output.txt');
+        execute_command('printf "" > /VVebUQ_runs/terminal_command.txt');
+        // --- Print the containers logs
+        selected_run = execute_command('ls /VVebUQ_runs/ -tr | grep workdir | tail -n 1');
+        selected_run = selected_run.replace("\n","");
+        if (selected_run != "")
+        {
+          previous_runs = get_previous_runs();
+          found_run = 'false';
+          for (i=0 ; i<previous_runs.length ; ++i)
+          {
+            if (previous_runs[i] == selected_run)
+            {
+              selector = document.getElementById("run_selector");
+              new_run = document.createElement('option');
+              new_run.setAttribute("value",previous_runs[i]);
+              new_run.innerHTML = previous_runs[i];
+              selector.appendChild(new_run);
+              run_select_change(selected_run);
+              found_run ='true';
+              break;
+            }
+          }
+          if (found_run == 'false')
+          {
+            run_select_change('select_run');
+          }
+        }
+        location.reload();
+        return;
+      }
+    };
+    xmlhttp.send(formdata);
+  }
+  if (action_specification == "remove_containers")
+  {
+    select_run = document.getElementById('run_selector').value;
+    if ( (select_run != "") && (select_run != "select_run") )
+    {
+      document.getElementById("waiting_gif").style.visibility="visible";
+      document.getElementById("action_wrapper_button").style.visibility="hidden";
+      document.getElementById("waiting_message").innerHTML="<br/>Please wait while the containers are being deleted.<br/>This may take a moment depending on the number of containers...<br/>";
+      run_name = select_run.split("workdir_");
+      run_name = "VVebUQ_CONTAINER_" + run_name[1];
+      command = 'for i in `docker ps -aqf name='+run_name+' --format="{{.ID}}"` ; do docker rm -f $i ; done ';
+      execute_command(command);
+      location.reload();
+      return;
+    }else
+    {
+      document.getElementById("action_wrapper_button").style.visibility="hidden";
+      document.getElementById("waiting_message").innerHTML="<br/>The selected run is not valid!<br/>";
+    }
+  }
+  if (action_specification == "purge_run")
+  {
+    select_run = document.getElementById('run_selector').value;
+    if ( (select_run != "") && (select_run != "select_run") )
+    {
+      document.getElementById("waiting_gif").style.visibility="visible";
+      document.getElementById("action_wrapper_button").style.visibility="hidden";
+      document.getElementById("waiting_message").innerHTML="<br/>Please wait while the run is being deleted.<br/>This may take a moment depending on the number of containers...<br/>";
+      run_name = select_run.split("workdir_");
+      run_name = "VVebUQ_CONTAINER_" + run_name[1];
+      command = 'for i in `docker ps -aqf name='+run_name+' --format="{{.ID}}"` ; do docker rm -f $i ; done ';
+      execute_command(command);
+      command = 'rm -rf /VVebUQ_runs/'+select_run;
+      execute_command(command);
+      location.reload();
+      return;
+    }else
+    {
+      document.getElementById("action_wrapper_button").style.visibility="hidden";
+      document.getElementById("waiting_message").innerHTML="<br/>The selected run is not valid!<br/>";
+    }
   }
 }
 
@@ -531,10 +672,75 @@ function launch_main_run()
   document.getElementById("waiting_message").innerHTML="<br/>This will launch the Dakota job with your code.<br/>Are you sure you want to action this request?<br/>";
   action_specification = "main_run";
 }
-
-
-
-
+function run_select(selected_option)
+{
+  document.getElementById("run_comments").innerHTML="";
+  if (selected_option.value != "select_run")
+  {
+    setCookie('selected_run',selected_option.value,7);
+    // --- print the docker containers corresponding to job
+    run_name = selected_option.value;
+    run_name = run_name.split("workdir_");
+    run_name = "VVebUQ_CONTAINER_" + run_name[1];
+    command = 'docker ps -aqf name='+run_name+' --format="table {{.Image}}\\t{{.ID}}\\t{{.RunningFor}}\\t{{.Status}}" ';
+    containers = execute_command(command);
+    containers = "<pre>" + containers + "</pre>";
+    document.getElementById("run_comments").innerHTML = containers;
+  }else
+  {
+    setCookie('selected_run','select_run',7);
+  }
+}
+function run_select_change(optionValToSelect)
+{
+  selectElement = document.getElementById('run_selector');
+  selectOptions = selectElement.options;
+  for (var opt, j = 0; opt = selectOptions[j]; j++)
+  {
+    if (opt.value == optionValToSelect)
+    {
+      selectElement.selectedIndex = j;
+      run_select(selectElement);
+      break;
+    }
+  }
+}
+function get_previous_runs()
+{
+  previous_runs = [];
+  output = execute_command('ls /VVebUQ_runs/ | grep workdir');
+  output = output.split("\n");
+  for (i=0 ; i<output.length; i++)
+  {
+    if (output[i] != "")
+    {
+      previous_runs.push(output[i]);
+    }
+  }
+  return previous_runs;
+}
+function refresh_containers_log()
+{
+  selected_run = document.getElementById('run_selector').value;
+  run_select_change(selected_run);
+}
+function stop_containers()
+{
+  show_waiting_div();
+  document.getElementById("waiting_message").innerHTML="<br/>This will stop and remove all containers for this run.<br/>"
+                                                      +"Data from completed containers will still be retrievable,<br/>"
+                                                      +"but you might lose data from unfinished containers.<br/>"
+                                                      +"Are you sure you want to action this request?<br/>";
+  action_specification = "remove_containers";
+}
+function purge_run()
+{
+  show_waiting_div();
+  document.getElementById("waiting_message").innerHTML="<br/>This will stop and remove all containers for this run,<br/>"
+                                                      +"and remove all data associated with this run.<br/>"
+                                                      +"Are you sure you want to action this request?<br/>";
+  action_specification = "purge_run";
+}
 
 
 
