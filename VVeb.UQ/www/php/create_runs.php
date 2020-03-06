@@ -13,6 +13,9 @@ $container_name = str_replace(':','_',$container_name);
 $workdir_name   = 'workdir_'.$date.'_'.$container_name;
 $container_name = 'VVebUQ_CONTAINER_'.$date.'_'.$container_name;
 
+// --- Get the number of cpu available (THIS NEEDS TO BE GENERALISED PROPERLY!!!)
+$n_cpu = 2;
+
 // --- Get run-dir
 $run_dir = shell_exec('cat config.in');
 $run_dir = str_replace("\n", '', $run_dir);
@@ -26,12 +29,15 @@ $input_file = $work_dir.'/vvebuq_input.nc';
 $args_file  = $files_dir.'/arguments_for_dakota_script.txt';
 shell_exec('mkdir -p '.$base_dir);
 shell_exec('mkdir -p '.$files_dir);
-shell_exec('../interfaces/create_dakota_input_file.perl '.$base_dir.'/dakota_run.in');
+shell_exec('cp /VVebUQ_runs/dakota_wrappers/*.py '.$files_dir.'/');
 shell_exec('cp '.$input_file.' '.$files_dir.'/');
-shell_exec('cp ../interfaces/generate_netcdf_based_on_dakota_params.py '.$files_dir.'/');
 shell_exec('cp ../interfaces/run_script.perl '.$base_dir.'/');
 shell_exec('chmod +x '.$base_dir.'/run_script.perl');
 shell_exec('printf \''.$container_name.' '.$mount_dir.' '.$image_name.'\' > '.$args_file);
+
+// --- Produce Dakota input file based on netcdf file provided by user
+$command = 'docker exec -w '.$base_dir.' -t dakota_container ./files_for_dakota/main.py -d run_script.perl -c '.$n_cpu.' -i '.$input_file.' -o '.$base_dir.'/dakota_run.in';
+shell_exec($command);
 
 // --- Run Container
 $command = 'docker exec -w '.$base_dir.' -t dakota_container dakota -i ./dakota_run.in -o dakota_run.out';

@@ -226,7 +226,7 @@ function action_wrapper()
     document.getElementById("waiting_gif").style.visibility="visible";
     document.getElementById("waiting_message").innerHTML="<br/>Please wait while the dakota image is retrieved and launched.<br/>This may take a minute or so...<br/>";
     // --- Send form
-    image_name = 'spamela2/dakota_container:latest';
+    image_name = 'dakota_image'; //'spamela2/dakota_container:latest';
     container_name = 'dakota_container';
     var formdata = new FormData();
     formdata.append("docker_image", image_name);
@@ -839,7 +839,7 @@ function reload_file_selector()
 function get_existing_files()
 { 
   existing_files = [];
-  output = execute_command('ls -p /VVebUQ_runs/ | grep -v "/" | grep -v "terminal_command.txt" | grep -v "terminal_output.txt" | grep -v "vvebuq_input.nc"');
+  output = execute_command('ls -p /VVebUQ_runs/ | grep -v "/" | grep -v "README.txt" | grep -v "terminal_command.txt" | grep -v "terminal_output.txt" | grep -v "vvebuq_input.nc"');
   output = output.split("\n");
   for (i=0 ; i<output.length; i++)
   { 

@@ -13,7 +13,7 @@ RUN yum update -y \
  && yum install -y docker-ce \
 # --- Install netcdf
  && yum install -y netcdf4-python.x86_64 python3-pip.noarch \
- && pip3 install netCDF4
+ && pip3 install netCDF4 xarray
 ENV PATH="/usr/lib64/openmpi/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/lib64/compat-openmpi16/lib/:${LD_LIBRARY_PATH}"
 ENV HOME="/dakota_dir"
@@ -32,6 +32,9 @@ ENV LD_LIBRARY_PATH="/usr/lib64/openmpi/lib/:${LD_LIBRARY_PATH}"
 ADD ./wrapdocker /usr/local/bin/wrapdocker
 RUN chmod +x /usr/local/bin/wrapdocker
 VOLUME /var/lib/docker
+
+# --- Dakota wrappers from J.Buchanan
+COPY dakota_wrappers/ /dakota_wrappers/
 
 # --- Run waiting script
 WORKDIR /dakota_dir/

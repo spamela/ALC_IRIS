@@ -12,6 +12,11 @@ $command = 'docker container run --privileged --name '.$container_name.' -v /var
 shell_exec('printf \''.$command.'\n\' > /VVebUQ_runs/terminal_command.txt');
 shell_exec($command.' &> /VVebUQ_runs/terminal_output.txt');
 
+// --- Copy wrappers to run-dir
+$command = 'docker cp '.$container_name.':/dakota_wrappers/ /VVebUQ_runs/';
+shell_exec('printf \''.$command.'\n\' > /VVebUQ_runs/terminal_command.txt');
+shell_exec($command.' &> /VVebUQ_runs/terminal_output.txt');
+
 // --- Go Home! (Said Nigel Fromage)
 header("Location: {$_SERVER['HTTP_REFERER']}");
 exit;

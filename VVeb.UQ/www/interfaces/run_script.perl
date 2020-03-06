@@ -13,7 +13,7 @@ if ($#my_args2 ne 2) {exit 2;}
 my $container_name = $my_args2[0];
 my $run_dir        = $my_args2[1];
 my $image_name     = $my_args2[2];
-# --- Write run script for dakota
+# --- Initialise some variables
 my @split_tmp = ();
 my $command = "";
 my $output = "";
@@ -24,7 +24,7 @@ $pwd =~ s/\s+//g;
 @split_tmp = split("/",$pwd);
 my $dir = $split_tmp[$#split_tmp];
 # --- Preprocessing (ie. convert dakota params file back to netcdf)
-`python3 generate_netcdf_based_on_dakota_params.py`;
+`python3 interface.py`;
 # --- Run container for each dir
 $command = 'docker container run --name '.$container_name.'_'.$dir.' -v '.$run_dir.'/'.$dir.':/work_dir/ -d '.$image_name;
 $output = `$command`;
