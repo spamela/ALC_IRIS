@@ -30,20 +30,19 @@ $args_file  = $files_dir.'/arguments_for_dakota_script.txt';
 shell_exec('mkdir -p '.$base_dir);
 shell_exec('mkdir -p '.$files_dir);
 shell_exec('cp /VVebUQ_runs/dakota_wrappers/*.py '.$files_dir.'/');
-shell_exec('cp '.$input_file.' '.$files_dir.'/');
+shell_exec('cp '.$input_file.' '.$files_dir.'/DAKOTA.nc');
 shell_exec('cp ../interfaces/run_script.perl '.$base_dir.'/');
 shell_exec('chmod +x '.$base_dir.'/run_script.perl');
 shell_exec('printf \''.$container_name.' '.$mount_dir.' '.$image_name.'\' > '.$args_file);
 
 // --- Produce Dakota input file based on netcdf file provided by user
-$command = 'docker exec -w '.$base_dir.' -t dakota_container ./files_for_dakota/main.py -d run_script.perl -c '.$n_cpu.' -i '.$input_file.' -o '.$base_dir.'/dakota_run.in';
+$command = 'docker exec -w '.$base_dir.' -t dakota_container python3 ./files_for_dakota/main.py -d run_script.perl -c '.$n_cpu.' -i '.$input_file.' -o '.$base_dir.'/dakota_run.in';
 shell_exec($command);
 
 // --- Run Container
 $command = 'docker exec -w '.$base_dir.' -t dakota_container dakota -i ./dakota_run.in -o dakota_run.out';
 shell_exec('printf \''.$command.'\n\' &> /VVebUQ_runs/terminal_command.txt');
 shell_exec($command.' &> /VVebUQ_runs/terminal_output.txt');
-#shell_exec($command);
 
 // --- Go Home! (Said Nigel Fromage)
 header("Location: {$_SERVER['HTTP_REFERER']}");

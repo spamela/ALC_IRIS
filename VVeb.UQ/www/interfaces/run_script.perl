@@ -24,7 +24,7 @@ $pwd =~ s/\s+//g;
 @split_tmp = split("/",$pwd);
 my $dir = $split_tmp[$#split_tmp];
 # --- Preprocessing (ie. convert dakota params file back to netcdf)
-`python3 interface.py`;
+`python3 interface.py dakota_params dakota_results`;
 # --- Run container for each dir
 $command = 'docker container run --name '.$container_name.'_'.$dir.' -v '.$run_dir.'/'.$dir.':/work_dir/ -d '.$image_name;
 $output = `$command`;

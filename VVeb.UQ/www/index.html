@@ -182,14 +182,17 @@
                 </select><br/>
                 <button id="refresh_result_list" onclick="refresh_result_list()">refresh</button>
                 <button id="purge_result" onclick="purge_result()">remove result</button>
-                <p id="result_comments" style="font-weight:normal; font-size:70%; overflow-x:scroll; overflow-y:scroll;"></p>
+                <div id="result_comments" style="font-weight:normal; font-size:70%; overflow-x:scroll; overflow-y:scroll;"></div>
               </div>
               <!-- Retrieve data -->
               <div style="display: table-cell; text-align: left;">
                 <p>Retrieve files</p>
                 <button id="download_entire_run" onclick="download_entire_run()">download everything</button>
                 <button id="download_selected_files" onclick="download_selected_files()">download selected files</button>
-                <p id="retrieve_comments"></p>
+                <div id="retrieve_comments" style="font-weight:normal; font-size:70%; overflow-x:scroll; overflow-y:scroll;">
+                  <p>The following files were selected for download:</p><br/>
+                  <ul id="retrieve_files_list"></ul>
+                </div>
               </div>
             </div>
           </div>

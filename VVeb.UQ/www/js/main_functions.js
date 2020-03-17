@@ -952,10 +952,23 @@ function result_select(selected_option)
     command = command + ' | grep -v "dakota_params.in"';
     command = command + ' | grep -v "dakota_params.out"';
     command = command + ' | grep -v "generate_netcdf_based_on_dakota_params.py"';
-    containers = execute_command(command);
-    containers = "<pre>" + containers + "</pre>";
-    containers = "<p>This case contains "+count_runs+" run-directories each with content:</p>" + containers;
-    document.getElementById("result_comments").innerHTML = containers;
+    fullcontent = execute_command(command);
+    split_content = fullcontent.split("\n");
+    new_list = document.createElement("ul");
+    for (i = 0; i<split_content.length; i++)
+    {
+      new_file = document.createElement("li");
+      new_file.setAttribute("id",split_content[i]);
+      new_file.setAttribute("style","cursor: pointer;");
+      new_file.setAttribute("onclick","select_result_file(this.id);");
+      new_file.innerHTML = split_content[i];
+      new_list.appendChild(new_file);
+    }
+    comments = document.createElement("div");
+    comments.innerHTML = "<p>This case contains "+count_runs+" run-directories each with content:</p><br/>";
+    result_div = document.getElementById("result_comments");
+    result_div.appendChild(comments);
+    result_div.appendChild(new_list);
   }else
   {
     setCookie('selected_result','select_result',7);
@@ -1043,9 +1056,82 @@ function purge_result()
                                                       +"Are you sure you want to action this request?<br/>";
   action_specification = "purge_result";
 }
-
-
-
+function select_result_file(file_id)
+{
+  new_list = document.getElementById("retrieve_files_list");
+  file_already_selected = 'false';
+  all_files = new_list.getElementsByTagName('li');
+  for (i = 0; i<all_files.length; i++)
+  {
+    file_tmp = all_files[i];
+    name_tmp = file_tmp.id;
+    name_tmp = name_tmp.split("REMOVE_FILE_");
+    name_tmp = name_tmp[1];
+    if (name_tmp == file_id)
+    {
+      file_already_selected = 'true';
+    }
+  }
+  if (file_already_selected == 'false')
+  {
+    new_file = document.createElement("li");
+    new_file.setAttribute("id","REMOVE_FILE_"+file_id);
+    new_file.setAttribute("style","cursor: pointer;");
+    new_file.setAttribute("onclick","unselect_result_file(this.id);");
+    new_file.innerHTML = file_id;
+    new_list.appendChild(new_file);
+  }
+}
+function unselect_result_file(file_id)
+{
+  filename = file_id.split("REMOVE_FILE_");
+  filename = filename[1];
+  new_list = document.getElementById("retrieve_files_list");
+  all_files = new_list.getElementsByTagName('li');
+  for (i = 0; i<all_files.length; i++)
+  {
+    file_tmp = all_files[i];
+    name_tmp = file_tmp.id;
+    name_tmp = name_tmp.split("REMOVE_FILE_");
+    name_tmp = name_tmp[1];
+    if (name_tmp == filename)
+    {
+      new_list.removeChild(file_tmp);
+    }
+  }
+}
+function download_entire_run()
+{
+  selected_result = document.getElementById('result_selector').value;
+  execute_command('cd /VVebUQ_runs/ ; zip -r '+selected_result+'.zip ./'+selected_result+' ; cd -');
+  execute_command('mkdir -p ../downloads ; mv /VVebUQ_runs/'+selected_result+'.zip ../downloads/');
+  link = document.createElement("a");
+  link.download = 'download_'+selected_result;
+  link.href = './downloads/'+selected_result+'.zip';
+  link.click();
+}
+function download_selected_files()
+{
+  selected_result = document.getElementById('result_selector').value;
+  zip_command = 'zip -rg '+selected_result+'.zip ';
+  new_list = document.getElementById("retrieve_files_list");
+  all_files = new_list.getElementsByTagName('li');
+  for (i = 0; i<all_files.length; i++)
+  { 
+    file_tmp = all_files[i];
+    name_tmp = file_tmp.id;
+    name_tmp = name_tmp.split("REMOVE_FILE_");
+    name_tmp = name_tmp[1];
+    full_name = selected_result+'/workdir_VVebUQ.*/'+name_tmp;
+    zip_command = zip_command +' '+full_name;
+  }
+  execute_command('cd /VVebUQ_runs/ ; '+zip_command+' ; cd -');
+  execute_command('mkdir -p ../downloads ; mv /VVebUQ_runs/'+selected_result+'.zip ../downloads/');
+  link = document.createElement("a");
+  link.download = 'download_'+selected_result;
+  link.href = './downloads/'+selected_result+'.zip';
+  link.click();
+}
 
 
 
