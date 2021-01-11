@@ -1,0 +1,58 @@
+# --- Docker file for a JOREK installation on Ubuntu-18.04
+FROM ubuntu:18.04
+ENV container docker
+MAINTAINER Stan Pamela <stanislas.pamela@ukaea.uk>
+
+# --- Packages and environment
+RUN apt-get update -y
+RUN apt-get install -y gfortran g++ libopenmpi-dev libhdf5-openmpi-dev libblas-dev liblapack-dev libscalapack-openmpi-dev wget git tar make
+
+# --- Copy JOREK into workdir and go there.
+# --- jorek.git is not open-source, so need to copy it directly
+# --- ie. you need to have a version of jorek (here called just ./jorek/)
+COPY jorek/ /jorek_working_dir/jorek/
+ENV HOME="/jorek_working_dir"
+ENV LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/hdf5/openmpi/:${LD_LIBRARY_PATH}"
+
+# --- Download Scotch and Pastix libraries
+WORKDIR /jorek_working_dir/libs/
+RUN wget https://github.com/spamela/ALC_IRIS/raw/master/jorek_data/scotch_5.1.tar.bz
+RUN wget https://github.com/spamela/ALC_IRIS/raw/master/jorek_data/pastix_5.2.2.22.tar.bz
+RUN tar -xvzf scotch_5.1.tar.bz
+RUN tar -xvzf pastix_5.2.2.22.tar.bz
+
+# --- Install Scotch
+WORKDIR /jorek_working_dir/libs/scotch_5.1/src/
+RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/Makefile.inc.scotch
+RUN mv Makefile.inc.scotch Makefile.inc
+RUN make -j
+RUN make -j ptscotch
+
+# --- Install Pastix
+WORKDIR /jorek_working_dir/libs/pastix_5.2.2.22/src/
+RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/config.in.pastix
+RUN mv config.in.pastix config.in
+RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/variable_csc.c
+RUN mv variable_csc.c sopalin/src/variable_csc.c
+RUN make -j
+RUN make -j install
+
+# --- Install JOREK
+WORKDIR /jorek_working_dir/jorek/
+RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/Makefile.inc.jorek.ubuntu
+RUN mv Makefile.inc.jorek.ubuntu Makefile.inc
+RUN sed 's/n_tor          = 11/n_tor          = 1/g' models/model303/mod_parameters.f90 > tmp.txt
+RUN sed 's/n_plane        = 32/n_plane        = 1/g' tmp.txt > models/model303/mod_parameters.f90
+RUN rm tmp.txt  
+RUN make -j 4
+
+# --- Run JOREK Tearing mode example
+WORKDIR /jorek_working_dir/run/
+RUN cp ../jorek/jorek_model303 .
+RUN cp ../jorek/namelist/model300/intear .
+#RUN echo "./jorek_model303 < ./intear > ./jorek_output.txt" > job.launch
+RUN echo "mpirun -np 1 --allow-run-as-root ./jorek_model303 < ./intear > ./jorek_output.txt 2> tmp.out" > job.launch
+RUN chmod +x ./job.launch
+ENTRYPOINT ["/bin/bash","-c","./job.launch"]
+
