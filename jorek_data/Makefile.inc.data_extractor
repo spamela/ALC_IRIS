@@ -1,0 +1,18 @@
+# --- Makefile for jorek processing with hdf5
+
+# --- Compiler
+#FCOMP = pgf90
+#FCOMP = f95
+#FCOMP = mpiifort -fpp
+FCOMP = mpif90 -cpp -ffree-line-length-512
+
+# --- HDF5 libs
+HDF5_INC = /usr/include/hdf5/openmpi/
+HDF5_LIB = -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi/ -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
+
+all:
+	$(FCOMP) -I$(HDF5_INC) -DUSE_HDF5 -c hdf5_io_module.f90
+	$(FCOMP) -I$(HDF5_INC) -DUSE_HDF5 -c fortran_process_jorek.f90
+	$(FCOMP) -I$(HDF5_INC) fortran_process_jorek.o hdf5_io_module.o -o fortran_process $(HDF5_LIB)
+	rm -f *.o *.mod
+	
