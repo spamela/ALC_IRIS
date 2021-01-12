@@ -7,10 +7,7 @@ MAINTAINER Stan Pamela <stanislas.pamela@ukaea.uk>
 RUN apt-get update -y
 RUN apt-get install -y gfortran g++ libopenmpi-dev libhdf5-openmpi-dev libblas-dev liblapack-dev libscalapack-openmpi-dev wget git tar make zip
 
-# --- Copy JOREK into workdir and go there.
-# --- jorek.git is not open-source, so need to copy it directly
-# --- ie. you need to have a version of jorek (here called just ./jorek/)
-COPY jorek/ /jorek_working_dir/jorek/
+# --- Set environment variables
 ENV HOME="/jorek_working_dir"
 ENV LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}"
 ENV LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/hdf5/openmpi/:${LD_LIBRARY_PATH}"
@@ -38,13 +35,20 @@ RUN mv variable_csc.c sopalin/src/variable_csc.c
 RUN make -j
 RUN make -j install
 
+# --- Copy JOREK into workdir and go there.
+# --- jorek.git is not open-source, so need to copy it directly
+# --- ie. you need to have a version of jorek (here called just ./jorek/)
+COPY jorek/ /jorek_working_dir/jorek/
 # --- Install JOREK
 WORKDIR /jorek_working_dir/jorek/
 RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/Makefile.inc.jorek.ubuntu
 RUN mv Makefile.inc.jorek.ubuntu Makefile.inc
-RUN sed 's/n_tor /n_tor = 1 !/g' models/model303/mod_parameters.f90 > tmp.txt
-RUN sed 's/n_plane /n_plane = 1 !/g' tmp.txt > models/model303/mod_parameters.f90
-RUN rm tmp.txt  
+RUN sed 's/303/500/g' Makefile.inc > tmp.txt
+RUN mv tmp.txt Makefile.inc
+RUN sed 's/n_tor /n_tor = 1 !/g' models/model500/mod_parameters.f90 > tmp.txt
+RUN sed 's/n_plane /n_plane = 1 !/g' tmp.txt > tmp2.txt
+RUN sed 's/n_period /n_period = 1 !/g' tmp2.txt > models/model500/mod_parameters.f90
+RUN rm tmp.txt tmp2.txt
 RUN make -j 4
 WORKDIR /jorek_working_dir/jorek/util/data_extractor/
 RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/Makefile.data_extractor
@@ -52,19 +56,15 @@ RUN mv Makefile.data_extractor Makefile
 RUN make
 
 # --- Run JOREK Tearing mode example
-WORKDIR /jorek_working_dir/run/
 WORKDIR /tmp/work_dir/
 RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/MAST_input.zip
 RUN unzip MAST_input.zip
-RUN cp /jorek_working_dir/jorek/jorek_model303 .
+RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/execute_jobs.sh
+RUN cp /jorek_working_dir/jorek/jorek_model500 .
 RUN cp /jorek_working_dir/jorek/util/data_extractor/fortran_process .
-RUN echo "export OMP_NUM_THREADS=30 ; mpirun -np 1 --allow-run-as-root ./jorek_model303 < ./inmast_grid > ./jorek_output_grid.txt 2> tmp.out" > job.launch.jorek.grid
-RUN echo "export OMP_NUM_THREADS=30 ; mpirun -np 1 --allow-run-as-root ./jorek_model303 < ./inmast > ./jorek_output_equi.txt 2> tmp.out" > job.launch.jorek.equi
-RUN echo "mpirun -np 30 --allow-run-as-root ./fortran_process -jorek_file jorek00001.h5 -save_pixels -resolution 0.05 -3D_grid > ./jorek_output_data_grid.txt 2> tmp.out" > job.launch.jorek.data.grid
-RUN echo "mpirun -np 30 --allow-run-as-root ./fortran_process -jorek_file jorek00001.h5 -use_pixel_file -variable custom -bin_data -3D_grid > ./jorek_output_data.txt 2> tmp.out" > job.launch.jorek.data
-RUN chmod +x ./job.launch.*
+RUN chmod +x ./execute_jobs.sh
 #ENTRYPOINT ["/bin/bash","-c","./job.launch"]
-CMD ["/bin/bash","-c","./job.launch.jorek.grid ; ./job.launch.jorek.equi ; ./job.launch.jorek.data.grid ; ./job.launch.jorek.data"]
+CMD ["/bin/bash","-c","./execute_jobs.sh ; mv data_jorek.ascii.bin ../ ; rm -rf * ; mv ../data_jorek.ascii.bin ."]
 #CMD ["/bin/bash","-c","tail -f /dev/null"]
 
 
