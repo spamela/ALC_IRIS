@@ -29,7 +29,7 @@ root_dir=`pwd`
 
 # --- Compile test program
 cd $root_dir/../
-g++ -o run_example example_boost_interprocess.cpp -pthread -I$root_dir/boost -lrt
+g++ -o run_example example_boost_interprocess.cpp -std=c++11 -pthread -I$root_dir/boost -I$root_dir -lrt
 
 # --- Run test-program
 if [ ! -f "run_example" ] ; then
