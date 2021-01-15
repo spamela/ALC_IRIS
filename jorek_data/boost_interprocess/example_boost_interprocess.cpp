@@ -1,8 +1,12 @@
 #include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/containers/string.hpp>
 #include <cstdlib> //std::system
 #include <cstddef>
 #include <cassert>
 #include <utility>
+#include <iostream>
+
 
 int main(int argc, char *argv[])
 {
@@ -32,6 +36,10 @@ int main(int argc, char *argv[])
       //An array of integers
       int int_initializer[3] = { 0, 1, 2 };
       int *shared_k = managed_shm.construct_it<int>("Integer_array")[3](&int_initializer[0]);
+      //A string
+      typedef allocator<char, managed_shared_memory::segment_manager> CharAllocator;
+      typedef basic_string<char, std::char_traits<char>, CharAllocator> string;
+      string *shared_s = managed_shm.find_or_construct<string>("String")("Hello!", managed_shm.get_segment_manager());
     }catch (boost::interprocess::bad_alloc &ex)
     {
       printf("Allocation error for shared memory: %s\n",ex.what());
@@ -66,6 +74,15 @@ int main(int argc, char *argv[])
     if (shared_k.first)
     {
       printf("Integer array of size %ld found: %d %d %d\n",shared_k.second,shared_k.first[0],shared_k.first[1],shared_k.first[2]);
+    }
+    //Find string
+    typedef allocator<char, managed_shared_memory::segment_manager> CharAllocator;
+    typedef basic_string<char, std::char_traits<char>, CharAllocator> string;
+    std::pair<string*, std::size_t> shared_s = managed_shm.find<string>("String");
+    if (shared_s.first)
+    {
+      //printf("String found: %s\n",*shared_s.first);
+      std::cout << "String found:"  << *shared_s.first << "\n";
     }
   }
   return 0;
