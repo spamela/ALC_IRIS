@@ -50,21 +50,35 @@ RUN sed 's/n_plane /n_plane = 1 !/g' tmp.txt > tmp2.txt
 RUN sed 's/n_period /n_period = 1 !/g' tmp2.txt > models/model500/mod_parameters.f90
 RUN rm tmp.txt tmp2.txt
 RUN make -j 4
+# --- Install JOREK's data-extractor for Mitsuba2 plasma rendering
 WORKDIR /jorek_working_dir/jorek/util/data_extractor/
 RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/Makefile.data_extractor
 RUN mv Makefile.data_extractor Makefile
 RUN make
 
-# --- Run JOREK Tearing mode example
-WORKDIR /tmp/work_dir/
+# --- Copy input files and job scripts into work-data-dir that will be copied into mounted dir /tmp/work_dir/ at run-time
+WORKDIR /work_data_required/
 RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/MAST_input.zip
 RUN unzip MAST_input.zip
 RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/execute_jobs.sh
+RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/modify_input_files.sh
+RUN chmod +x ./execute_jobs.sh ./modify_input_files.sh
+# --- Copy fake input file (ONLY WHEN NOT RUNNING THROUGH VVeb.UQ)
+#RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/input_scan.csv
+# --- Copy codes into work-dir
 RUN cp /jorek_working_dir/jorek/jorek_model500 .
 RUN cp /jorek_working_dir/jorek/util/data_extractor/fortran_process .
-RUN chmod +x ./execute_jobs.sh
-#ENTRYPOINT ["/bin/bash","-c","./job.launch"]
-CMD ["/bin/bash","-c","./execute_jobs.sh ; mv data_jorek.ascii.bin ../ ; rm -rf * ; mv ../data_jorek.ascii.bin ."]
+# --- Clean-up compile directory to reduce image size
+RUN rm -rf /jorek_working_dir/*
+# --- Run JOREK and post-processing.
+# --- We delete everything, except input files and post-processed files. This will reduce data-retrieval.
+WORKDIR /tmp/work_dir/
+#CMD ["/bin/bash","-c","cp -r /work_data_required/* . ; ./modify_input_files.sh ; ./execute_jobs.sh ; mv jorek_data_*.ascii.bin inmast* input_scan.csv jorek_output_* ../ ; rm -rf * ; mv ../jorek_data_*.ascii.bin ../inmast* ../input_scan.csv ../jorek_output_* . ; tail -f /dev/null"]
+CMD ["/bin/bash","-c","cp -r /work_data_required/* . ; ./modify_input_files.sh ; ./execute_jobs.sh ; mv jorek_data_*.ascii.bin inmast* input_scan.csv jorek_output_* ../ ; rm -rf * ; mv ../jorek_data_*.ascii.bin ../inmast* ../input_scan.csv ../jorek_output_* ."]
+
+# --- Debug only
+#ENTRYPOINT ["/bin/bash","-c","tail -f /dev/null"]
 #CMD ["/bin/bash","-c","tail -f /dev/null"]
+
 
 
