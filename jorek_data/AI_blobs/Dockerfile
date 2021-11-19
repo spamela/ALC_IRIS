@@ -58,23 +58,35 @@ RUN make
 
 # --- Copy input files and job scripts into work-data-dir that will be copied into mounted dir /tmp/work_dir/ at run-time
 WORKDIR /work_data_required/
+# --- Input file and details
 RUN cp /jorek_working_dir/jorek/namelist/model002/inblob_low_visco .
-RUN sed 's/tstep /tstep   = 0.005 !/g' inblob_low_visco > tmp.txt && mv tmp.txt inblob_low_visco
+RUN sed 's/tstep /tstep   = 0.005 !/g'         inblob_low_visco > tmp.txt && mv tmp.txt inblob_low_visco
+RUN sed 's/visco /visco     = 1.d-4 !/g'       inblob_low_visco > tmp.txt && mv tmp.txt inblob_low_visco
+RUN sed 's/visco_num /visco_num = 1.d-7 !/g'   inblob_low_visco > tmp.txt && mv tmp.txt inblob_low_visco
+RUN sed 's/D_perp /D_perp = 1.d-5 !/g'         inblob_low_visco > tmp.txt && mv tmp.txt inblob_low_visco
+RUN sed 's/D_perp_num /D_perp_num = 1.d-8 !/g' inblob_low_visco > tmp.txt && mv tmp.txt inblob_low_visco
+# --- DEBUG only! (using light test-case)
+#RUN sed 's/nstep /nstep   = 20 !/g' inblob_low_visco > tmp.txt && mv tmp.txt inblob_low_visco
+#RUN sed 's/n_R /n_R = 20 !/g'        inblob_low_visco > tmp.txt && mv tmp.txt inblob_low_visco
+#RUN sed 's/n_Z /n_Z = 20 !/g'        inblob_low_visco > tmp.txt && mv tmp.txt inblob_low_visco
+# --- DEBUG Copy fake input file (ONLY WHEN NOT RUNNING THROUGH VVeb.UQ)
+#RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/AI_blobs/input_scan.csv
+# --- job scripts
 RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/AI_blobs/execute_jobs.sh
 RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/AI_blobs/modify_input_files.sh
 RUN chmod +x ./execute_jobs.sh ./modify_input_files.sh
-# --- Copy fake input file (ONLY WHEN NOT RUNNING THROUGH VVeb.UQ)
-#RUN wget https://raw.githubusercontent.com/spamela/ALC_IRIS/master/jorek_data/AI_blobs/input_scan.csv
 # --- Copy codes into work-dir
 RUN cp /jorek_working_dir/jorek/jorek_model002 .
 RUN cp /jorek_working_dir/jorek/util/data_extractor/fortran_process .
-# --- Clean-up compile directory to reduce image size
+# --- NOT DEBUG! Clean-up compile directory to reduce image size
 RUN rm -rf /jorek_working_dir/*
 # --- Run JOREK and post-processing.
 # --- We delete everything, except input files and post-processed files. This will reduce data-retrieval.
 WORKDIR /tmp/work_dir/
-#CMD ["/bin/bash","-c","cp -r /work_data_required/* . ; ./modify_input_files.sh ; ./execute_jobs.sh ; mv jorek_data_*.ascii.bin inmast* input_scan.csv jorek_output_* ../ ; rm -rf * ; mv ../jorek_data_*.ascii.bin ../inmast* ../input_scan.csv ../jorek_output_* . ; tail -f /dev/null"]
-CMD ["/bin/bash","-c","cp -r /work_data_required/* . ; ./modify_input_files.sh ; ./execute_jobs.sh ; mv data_jorek*.h5 inblob_low_visco* input_scan.csv jorek_output_* ../ ; rm -rf * ; mv ../data_jorek*.h5 ../inblob_low_visco* ../input_scan.csv ../jorek_output_* . ; tail -f /dev/null"]
+
+CMD ["/bin/bash","-c","cp -r /work_data_required/* . ; ./modify_input_files.sh ; ./execute_jobs.sh ; mv data_jorek*.h5 inblob_low_visco* input_scan.csv jorek_output_* ../ ; rm -rf * ; mv ../data_jorek*.h5 ../inblob_low_visco* ../input_scan.csv ../jorek_output_* ."]
+# --- DEBUG only
+#CMD ["/bin/bash","-c","cp -r /work_data_required/* . ; ./modify_input_files.sh ; ./execute_jobs.sh ; tail -f /dev/null"]
 
 # --- Debug only
 #ENTRYPOINT ["/bin/bash","-c","tail -f /dev/null"]
