@@ -14,7 +14,7 @@ done
 
 # --- Run JOREK
 export OMP_NUM_THREADS=$n_cpu
-mpirun -np 1 --allow-run-as-root ./jorek_model002 < ./inblob_low_visco > ./jorek_output_run.txt
+mpirun -n 1 --allow-run-as-root ./jorek_model002 < ./inblob_low_visco > ./jorek_output_run.txt
 
 # --- Get number of files produced
 sentence=`ls ./jorek0*.h5`
