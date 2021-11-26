@@ -7,8 +7,16 @@
 FCOMP = mpif90 -cpp -ffree-line-length-512
 
 # --- HDF5 libs
-HDF5_INC = /usr/lib64/gfortran/modules
-HDF5_LIB = -L/usr/lib64/openmpi/lib/ -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
+#HDF5_INC = /usr/lib64/gfortran/modules
+#HDF5_LIB = -L/usr/lib64/openmpi/lib/ -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
+HDF5_HOME = $(HOME)/libs/hdf5-1.12.0/install
+SZIP_LIB  = $(HOME)/libs/szip-2.1.1/install/lib
+HDF5_INC  = $(HDF5_HOME)/include
+HDF5_LIB  = $(HDF5_HOME)/lib/libhdf5hl_fortran.a \
+            $(HDF5_HOME)/lib/libhdf5_hl.a \
+            $(HDF5_HOME)/lib/libhdf5_fortran.a \
+            $(HDF5_HOME)/lib/libhdf5.a \
+            $(SZIP_LIB)/libsz.a -lz -ldl -lm -lpthread -pthread
 
 all:
 	$(FCOMP) -I$(HDF5_INC) -DUSE_HDF5 -c hdf5_io_module.f90
