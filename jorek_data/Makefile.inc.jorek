@@ -51,5 +51,5 @@ HDF5LIB     = $(HDF5_HOME)/lib/libhdf5hl_fortran.a \
               $(HDF5_HOME)/lib/libhdf5_hl.a \
               $(HDF5_HOME)/lib/libhdf5_fortran.a \
               $(HDF5_HOME)/lib/libhdf5.a \
-              $(SZIP_LIB)/libsz.a -lz -ldl
+              $(SZIP_LIB)/libsz.a -lz -ldl -lm -lpthread -pthread
 
