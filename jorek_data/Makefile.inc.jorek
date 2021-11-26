@@ -10,7 +10,7 @@ CXX    = mpicxx
 DEBUG = 0
 
 FFLAGS := $(FFLAGS) -DFUNNELED -fdefault-real-8 -fdefault-double-8
-FLAGS += -O3 -msse2 -march=native -w
+FLAGS += -O3 -msse2 -march=native -w -DUSE_HDF5
 
 FFLAGS_FIXEDFORM = $(FFLAGS)
 FFLAGS_NOBOUNDS  = $(FFLAGS)
