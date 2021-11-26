@@ -10,7 +10,7 @@ CXX    = mpicxx
 DEBUG = 0
 
 FFLAGS := $(FFLAGS) -DFUNNELED -fdefault-real-8 -fdefault-double-8
-FLAGS += -I/usr/include/hdf5/openmpi/ -O2 -msse2 -w
+FLAGS += -I/usr/include/hdf5/openmpi/ -O2 -march=x86-64 -msse2 -w
 
 FFLAGS_FIXEDFORM = $(FFLAGS)
 FFLAGS_NOBOUNDS  = $(FFLAGS)
