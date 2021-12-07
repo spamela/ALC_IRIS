@@ -12,6 +12,9 @@ do
   fi
 done
 
+# --- Run memory diagnostic
+./check_mem_usage_new.sh > check_mem.txt &
+
 # --- Run JOREK
 export OMP_NUM_THREADS=$n_cpu
 #mpirun -n 1 --allow-run-as-root ./jorek_model002 < ./inblob_low_visco > ./jorek_output_run.txt
